@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+target/
+docs/doc_build/
+
+# Rust
+src-tauri/
+
+# Generated files
+*.d.ts
+*.js.map
+*.css.map
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+Cargo.lock
