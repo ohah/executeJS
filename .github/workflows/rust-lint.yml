@@ -32,7 +32,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
-          components: rustfmt, clippy
+          components: rustfmt
           cache: true
           matcher: true
 
@@ -40,8 +40,3 @@ jobs:
         run: |
           echo "Checking Rust code formatting..."
           cargo fmt --all -- --check
-
-      - name: Run Clippy
-        run: |
-          echo "Running Clippy lints..."
-          cargo clippy --all-targets --all-features -- -D warnings

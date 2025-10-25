@@ -67,3 +67,6 @@ temp/
 # Rust
 **/target/
 **/*.rs.bk
+
+# Tauri generated files
+**/src-tauri/gen

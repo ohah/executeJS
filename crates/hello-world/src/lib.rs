@@ -1,7 +1,6 @@
 /// Hello World 크레이트
 ///
 /// 이 크레이트는 ExecuteJS 모노레포의 예제 크레이트입니다.
-
 /// 사용자에게 인사를 전하는 함수
 pub fn say_hello(name: &str) -> String {
     format!("Hello, {}! Welcome to ExecuteJS!", name)

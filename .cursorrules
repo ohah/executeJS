@@ -14,10 +14,40 @@
 ### 기술 스택
 - **Frontend**: React 18, TypeScript, Vite, Vitest
 - **Backend**: Rust, Tauri 2.0
+- **JavaScript Engine**: Deno Core 0.323 (V8 기반)
 - **Package Manager**: pnpm
 - **Linting**: oxlint (JavaScript), clippy (Rust)
 - **Formatting**: Prettier (JavaScript), rustfmt (Rust)
 - **Documentation**: RSPress
+
+### JavaScript 런타임 아키텍처
+
+#### Deno Core 통합
+- **엔진**: `deno_core` 0.323 (V8 JavaScript 엔진)
+- **실행 방식**: `tokio::task::spawn_blocking`으로 별도 스레드에서 실행
+- **호환성**: Tauri 2.0과 완전 호환 (Send 트레이트 문제 해결)
+
+#### 핵심 컴포넌트
+```
+apps/executeJS/src-tauri/src/
+├── deno_runtime.rs          # Deno Core 런타임 구현
+├── bootstrap.js             # JavaScript API 정의
+├── js_executor.rs           # 실행 결과 관리
+└── commands.rs              # Tauri 명령어
+```
+
+#### 실행 흐름
+1. **초기화**: `DenoExecutor::new()` - 출력 버퍼 설정
+2. **실행**: `execute_script()` - 별도 스레드에서 Deno Core 실행
+3. **API 연결**: `bootstrap.js` - console.log, alert 등 커스텀 API
+4. **결과 처리**: 출력 버퍼에서 결과 수집 및 반환
+
+#### 지원 기능
+- ✅ `console.log()` - 다중 인자, 객체 직렬화
+- ✅ `alert()` - 사용자 알림
+- ✅ 변수 할당 및 계산
+- ✅ 문법 오류 감지 (실제 JavaScript 엔진 수준)
+- ✅ Chrome DevTools 수준의 출력
 
 ## 코딩 규칙
 
@@ -134,6 +164,12 @@ chore: 빌드 설정 변경
 - Tauri DevTools 사용
 - 네이티브 로그 확인
 
+### JavaScript 런타임
+- `cargo test deno_runtime::tests` - 런타임 테스트
+- `bootstrap.js` 수정 시 재컴파일 필요
+- op 함수 추가 시 `extension!` 매크로 업데이트
+- 전역 상태(`OUTPUT_BUFFER`) 주의
+
 ## 주의사항
 
 1. **의존성**: 모든 의존성은 `latest` 버전 사용
@@ -159,3 +195,10 @@ chore: 빌드 설정 변경
 1. `pnpm lint:fix` 실행
 2. `cargo fmt` 실행
 3. 수동으로 규칙에 맞게 수정
+
+### Deno Core 관련 문제
+1. **Send 트레이트 오류**: `tokio::task::spawn_blocking` 사용 확인
+2. **op 함수 오류**: `#[op2(fast)]` 속성 및 `extension!` 매크로 확인
+3. **bootstrap.js 오류**: `include_str!` 매크로로 올바르게 포함되었는지 확인
+4. **전역 상태 충돌**: 테스트 간 격리 락 사용
+5. **V8 엔진 오류**: `deno_core` 버전 호환성 확인
