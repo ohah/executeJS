@@ -1,0 +1,41 @@
+{
+  "name": "executeJS",
+  "version": "0.0.0",
+  "private": true,
+  "description": "ExecuteJS Monorepo with Tauri",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "prettier --write \"**/*.{js,ts,tsx,jsx,json,md}\" && cargo fmt",
+    "format:check": "prettier --check \"**/*.{js,ts,tsx,jsx,json,md}\" && cargo fmt -- --check",
+    "format:rust": "cargo fmt",
+    "format:rust:check": "cargo fmt -- --check",
+    "dev": "pnpm --filter @executeJS/app dev",
+    "tauri:dev": "pnpm --filter @executeJS/app tauri dev",
+    "tauri:build": "pnpm --filter @executeJS/app tauri build",
+    "docs:dev": "pnpm --filter @executeJS/docs dev",
+    "docs:build": "pnpm --filter @executeJS/docs build",
+    "docs:preview": "pnpm --filter @executeJS/docs preview",
+    "clean": "pnpm -r clean && cargo clean",
+    "type-check": "pnpm -r type-check"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@testing-library/react": "latest",
+    "@testing-library/jest-dom": "latest",
+    "jsdom": "latest",
+    "prettier": "latest",
+    "typescript": "latest",
+    "vitest": "latest",
+    "oxlint": "latest"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.19.0"
+}
