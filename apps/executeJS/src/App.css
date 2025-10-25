@@ -45,6 +45,9 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  min-height: 100vh;
 }
 
 .app-header {
@@ -52,10 +55,16 @@
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 2px solid #646cff;
+  color: #ffffff;
+}
+
+.app-header h1 {
+  color: #ffffff;
+  margin-bottom: 10px;
 }
 
 .app-info {
-  color: #666;
+  color: #a0a0a0;
   font-size: 14px;
   margin-top: 10px;
 }
@@ -86,9 +95,11 @@
   font-family: 'Courier New', monospace;
   font-size: 14px;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #555;
   border-radius: 4px;
   resize: vertical;
+  background-color: #2a2a2a;
+  color: #ffffff;
 }
 
 .result-section {
@@ -97,16 +108,20 @@
   padding: 15px;
   border-radius: 4px;
   border-left: 4px solid;
+  background-color: #2a2a2a;
+  color: #ffffff;
 }
 
 .result-section.success {
-  background-color: #f0f9ff;
+  background-color: #1a2a1a;
   border-left-color: #10b981;
+  color: #ffffff;
 }
 
 .result-section.error {
-  background-color: #fef2f2;
+  background-color: #2a1a1a;
   border-left-color: #ef4444;
+  color: #ffffff;
 }
 
 .result-info {
@@ -118,7 +133,7 @@
 }
 
 .timestamp {
-  color: #666;
+  color: #a0a0a0;
 }
 
 .status {
@@ -143,6 +158,10 @@
   word-wrap: break-word;
   margin: 0;
   font-family: 'Courier New', monospace;
+  color: #ffffff;
+  background-color: #1a1a1a;
+  padding: 10px;
+  border-radius: 4px;
 }
 
 .history-section {
@@ -153,14 +172,17 @@
 .history-list {
   max-height: 400px;
   overflow-y: auto;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #555;
   border-radius: 4px;
+  background-color: #2a2a2a;
 }
 
 .history-item {
   padding: 15px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #555;
   border-left: 4px solid;
+  background-color: #2a2a2a;
+  color: #ffffff;
 }
 
 .history-item:last-child {
@@ -186,20 +208,26 @@
 .history-code {
   font-family: 'Courier New', monospace;
   font-size: 13px;
-  background-color: #f9fafb;
+  background-color: #1a1a1a;
+  color: #ffffff;
   padding: 8px;
   border-radius: 4px;
   margin-bottom: 8px;
   white-space: pre-wrap;
   word-wrap: break-word;
+  border: 1px solid #555;
 }
 
 .history-result {
   font-family: 'Courier New', monospace;
   font-size: 12px;
-  color: #374151;
+  color: #ffffff;
   white-space: pre-wrap;
   word-wrap: break-word;
+  background-color: #1a1a1a;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #555;
 }
 
 .greet-message {
@@ -208,26 +236,28 @@
   color: #646cff;
   margin: 20px 0;
   padding: 10px;
-  background-color: #f0f9ff;
+  background-color: #1a1a2a;
   border-radius: 4px;
+  border: 1px solid #555;
 }
 
 button {
   border-radius: 8px;
-  border: 1px solid transparent;
+  border: 1px solid #555;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
-  color: white;
+  background-color: #2a2a2a;
+  color: #ffffff;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s;
   margin: 5px;
 }
 
 button:hover {
   border-color: #646cff;
+  background-color: #3a3a3a;
 }
 
 button:focus,
@@ -237,14 +267,14 @@ button:focus-visible {
 
 input {
   border-radius: 8px;
-  border: 1px solid transparent;
+  border: 1px solid #555;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
-  color: white;
-  transition: border-color 0.25s;
+  background-color: #2a2a2a;
+  color: #ffffff;
+  transition: all 0.25s;
   margin: 5px;
 }
 
@@ -252,4 +282,5 @@ input:focus,
 input:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
   border-color: #646cff;
+  background-color: #3a3a3a;
 }
