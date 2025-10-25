@@ -1,0 +1,131 @@
+# 개발 가이드
+
+ExecuteJS 프로젝트의 개발 환경 설정과 기여 방법을 안내합니다.
+
+## 개발 환경 설정
+
+### 1. 필수 도구 설치
+
+```bash
+# Node.js 22 LTS 설치 (nvm 사용 권장)
+nvm install 22
+nvm use 22
+
+# pnpm 설치
+npm install -g pnpm
+
+# Rust 설치
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Tauri CLI 설치
+cargo install tauri-cli
+```
+
+### 2. 프로젝트 설정
+
+```bash
+# 의존성 설치
+pnpm install
+
+# 개발 서버 실행
+pnpm tauri:dev
+```
+
+## 개발 워크플로우
+
+### 코드 품질 관리
+
+```bash
+# 린트 검사
+pnpm lint
+
+# 린트 자동 수정
+pnpm lint:fix
+
+# 포맷팅
+pnpm format
+
+# 포맷팅 검사
+pnpm format:check
+
+# 타입 검사
+pnpm type-check
+```
+
+### 테스트
+
+```bash
+# 프론트엔드 테스트
+pnpm test
+
+# Rust 테스트
+cargo test
+
+# 모든 테스트
+pnpm test --run
+cargo test --all-targets
+```
+
+### 빌드
+
+```bash
+# 개발 빌드
+pnpm tauri:dev
+
+# 프로덕션 빌드
+pnpm tauri:build
+```
+
+## CI/CD
+
+프로젝트는 GitHub Actions를 통해 자동화된 품질 관리를 제공합니다:
+
+- **JavaScript/TypeScript Lint**: oxlint를 통한 코드 품질 검사
+- **Rust Lint**: rustfmt와 clippy를 통한 Rust 코드 검사
+- **Frontend Test**: vitest를 통한 프론트엔드 테스트
+- **Rust Test**: cargo test를 통한 Rust 테스트
+- **Build Check**: 전체 프로젝트 빌드 검증
+
+## 기여하기
+
+1. 이슈를 생성하거나 기존 이슈를 확인하세요.
+2. 포크를 생성하고 새 브랜치를 만드세요.
+3. 변경사항을 구현하고 테스트하세요.
+4. 커밋 메시지를 명확하게 작성하세요.
+5. Pull Request를 생성하세요.
+
+### 커밋 컨벤션
+
+```
+type(scope): description
+
+feat: 새로운 기능 추가
+fix: 버그 수정
+docs: 문서 수정
+style: 코드 포맷팅
+refactor: 코드 리팩토링
+test: 테스트 추가/수정
+chore: 빌드 설정 변경
+```
+
+## 아키텍처
+
+### 프론트엔드 (React + TypeScript)
+
+- **상태 관리**: React Hooks (useState, useEffect)
+- **빌드 도구**: Vite
+- **테스팅**: Vitest + Testing Library
+- **린팅**: oxlint + Prettier
+
+### 백엔드 (Rust + Tauri)
+
+- **프레임워크**: Tauri 2.0
+- **테스팅**: cargo test
+- **린팅**: rustfmt + clippy
+- **로깅**: tracing
+
+### 모노레포 구조
+
+- **pnpm 워크스페이스**: Node.js 패키지 관리
+- **Cargo 워크스페이스**: Rust 크레이트 관리
+- **조건부 CI**: 폴더별 변경사항에 따른 워크플로우 실행

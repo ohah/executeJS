@@ -1,0 +1,19 @@
+{
+  "name": "@executeJS/docs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "ExecuteJS Documentation",
+  "scripts": {
+    "build": "rspress build",
+    "dev": "rspress dev",
+    "preview": "rspress preview"
+  },
+  "dependencies": {
+    "@live-demo/core": "^0.1.2",
+    "@live-demo/plugin-rspress": "0.1.2",
+    "react": "latest",
+    "react-dom": "latest",
+    "rspress": "latest"
+  },
+  "devDependencies": {}
+}
