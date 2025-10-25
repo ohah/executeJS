@@ -1,0 +1,32 @@
+{
+  "name": "@executeJS/app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ExecuteJS Tauri Application",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "prettier --write \"**/*.{js,ts,tsx,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,ts,tsx,jsx,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "clean": "rm -rf dist src-tauri/target"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.0.0",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "latest",
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest"
+  }
+}

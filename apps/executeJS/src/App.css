@@ -1,0 +1,255 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+      transition: filter 300ms;
+    }
+    .logo:hover {
+      filter: drop-shadow(0 0 2em #646cffaa);
+    }
+    .logo.react:hover {
+      filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #646cff;
+}
+
+.app-info {
+  color: #666;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.row {
+  margin: 20px 0;
+}
+
+.code-section {
+  text-align: left;
+  margin: 20px 0;
+}
+
+.code-controls {
+  margin-bottom: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.code-controls button {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.code-section textarea {
+  width: 100%;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.result-section {
+  text-align: left;
+  margin: 20px 0;
+  padding: 15px;
+  border-radius: 4px;
+  border-left: 4px solid;
+}
+
+.result-section.success {
+  background-color: #f0f9ff;
+  border-left-color: #10b981;
+}
+
+.result-section.error {
+  background-color: #fef2f2;
+  border-left-color: #ef4444;
+}
+
+.result-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.timestamp {
+  color: #666;
+}
+
+.status {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 11px;
+}
+
+.status.success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.result-section pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+  font-family: 'Courier New', monospace;
+}
+
+.history-section {
+  margin: 30px 0;
+  text-align: left;
+}
+
+.history-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+}
+
+.history-item {
+  padding: 15px;
+  border-bottom: 1px solid #e5e7eb;
+  border-left: 4px solid;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-item.success {
+  border-left-color: #10b981;
+}
+
+.history-item.error {
+  border-left-color: #ef4444;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.history-code {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  background-color: #f9fafb;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.history-result {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #374151;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.greet-message {
+  text-align: center;
+  font-size: 18px;
+  color: #646cff;
+  margin: 20px 0;
+  padding: 10px;
+  background-color: #f0f9ff;
+  border-radius: 4px;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  color: white;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  margin: 5px;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+input {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  color: white;
+  transition: border-color 0.25s;
+  margin: 5px;
+}
+
+input:focus,
+input:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+  border-color: #646cff;
+}
