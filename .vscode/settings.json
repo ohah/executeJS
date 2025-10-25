@@ -1,0 +1,38 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.fixAll.oxc": "explicit"
+  },
+  "rust-analyzer.cargo.features": "all",
+  "rust-analyzer.procMacro.enable": true,
+  "files.associations": {
+    "*.rs": "rust"
+  },
+  "editor.rulers": [100],
+  "editor.tabSize": 2,
+  "[rust]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+  "[typescript]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[typescriptreact]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[javascript]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[javascriptreact]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[json]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  }
+}
