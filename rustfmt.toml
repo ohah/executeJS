@@ -1,0 +1,4 @@
+# Rustfmt configuration for ExecuteJS monorepo
+# Using rustfmt's recommended defaults with minimal customization
+
+edition = "2021"
