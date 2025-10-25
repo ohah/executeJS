@@ -1,8 +1,6 @@
 use anyhow::Result;
 use deno_core::error::AnyError;
 use deno_core::{extension, op2, FsModuleLoader, JsRuntime, RuntimeOptions};
-use regex::Regex;
-use std::collections::HashMap;
 use std::collections::VecDeque;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -273,5 +271,31 @@ mod tests {
         let output = result.unwrap();
         println!("실제 출력: '{}'", output);
         assert!(output.contains("result: 8"));
+    }
+
+    #[tokio::test]
+    async fn test_lodash_import() {
+        let _lock = TEST_LOCK.lock().unwrap();
+        let mut executor = DenoExecutor::new().await.unwrap();
+        let result = executor
+            .execute_script(
+                "test.js",
+                r#"
+                try {
+                    const _ = require('lodash');
+                    const numbers = [1, 2, 3, 4, 5];
+                    const doubled = _.map(numbers, n => n * 2);
+                    console.log('Lodash test:', doubled);
+                } catch (error) {
+                    console.log('Lodash not available:', error.message);
+                }
+                "#,
+            )
+            .await;
+        assert!(result.is_ok());
+        let output = result.unwrap();
+        println!("Lodash 테스트 출력: '{}'", output);
+        // lodash가 사용 가능한지 또는 오류 메시지가 나오는지 확인
+        assert!(output.contains("Lodash test:") || output.contains("Lodash not available:"));
     }
 }

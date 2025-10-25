@@ -69,4 +69,4 @@ temp/
 **/*.rs.bk
 
 # Tauri generated files
-src-tauri/gen
+**/src-tauri/gen

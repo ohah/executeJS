@@ -98,7 +98,7 @@ async fn execute_with_deno(code: &str) -> Result<String, Box<dyn std::error::Err
 
     // 코드 실행
     let result = executor
-        .execute_script("user_code.js", code)
+        .execute_script("index.js", code)
         .await
         .map_err(|e| format!("JavaScript 실행 실패: {}", e))?;
 
