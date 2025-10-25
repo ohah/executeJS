@@ -17,7 +17,10 @@ pub fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-pub async fn execute_js(code: &str, state: State<'_, JsExecutorState>) -> Result<JsExecutionResult, String> {
+pub async fn execute_js(
+    code: &str,
+    state: State<'_, JsExecutorState>,
+) -> Result<JsExecutionResult, String> {
     let result = execute_javascript_code(code).await;
 
     // 실행 결과를 히스토리에 추가
