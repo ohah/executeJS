@@ -57,8 +57,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     minimap: { enabled: false },
     scrollBeyondLastLine: false,
     fontSize: 14,
-    lineHeight: 20,
-    fontFamily: 'JetBrains Mono, Fira Code, monospace',
+    lineHeight: 22,
+    fontFamily: 'JetBrains Mono, Fira Code, Consolas, Monaco, monospace',
     wordWrap: 'on' as const,
     wrappingIndent: 'indent' as const,
     tabSize: 2,
@@ -70,6 +70,21 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       bracketPairs: true,
       indentation: true,
     },
+    padding: { top: 16, bottom: 16 },
+    scrollbar: {
+      vertical: 'auto' as const,
+      horizontal: 'auto' as const,
+      useShadows: false,
+      verticalHasArrows: false,
+      horizontalHasArrows: false,
+      verticalScrollbarSize: 8,
+      horizontalScrollbarSize: 8,
+    },
+    contextmenu: true,
+    mouseWheelZoom: true,
+    smoothScrolling: true,
+    cursorBlinking: 'blink' as const,
+    cursorSmoothCaretAnimation: 'on' as const,
   };
 
   return (

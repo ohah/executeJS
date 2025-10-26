@@ -15,6 +15,38 @@
   * {
     box-sizing: border-box;
   }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0f172a; /* slate-950 */
+    color: #f8fafc; /* slate-50 */
+  }
+
+  /* 스크롤바 스타일링 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1e293b; /* slate-800 */
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #475569; /* slate-600 */
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #64748b; /* slate-500 */
+  }
+
+  /* 선택 영역 스타일링 */
+  ::selection {
+    background-color: #3b82f6; /* blue-500 */
+    color: white;
+  }
 }
 
 @layer components {
@@ -23,13 +55,38 @@
   }
 
   .panel-resize-handle {
-    width: 0.25rem;
-    background-color: hsl(0 0% 88.7%);
+    width: 4px;
+    background-color: #334155; /* slate-700 */
     transition: background-color 150ms;
     cursor: col-resize;
   }
 
   .panel-resize-handle:hover {
-    background-color: hsl(0 0% 78%);
+    background-color: #475569; /* slate-600 */
+  }
+
+  /* 버튼 애니메이션 */
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 active:bg-blue-800;
+    @apply transition-all duration-200 ease-in-out;
+    @apply transform hover:scale-105 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-slate-700 hover:bg-slate-600 active:bg-slate-500;
+    @apply transition-all duration-200 ease-in-out;
+    @apply transform hover:scale-105 active:scale-95;
+  }
+
+  /* 코드 블록 스타일링 */
+  .code-block {
+    @apply bg-slate-950 border border-slate-700 rounded-lg;
+    @apply font-mono text-sm text-slate-300;
+    @apply overflow-x-auto;
+  }
+
+  /* 로딩 애니메이션 */
+  .loading-spinner {
+    @apply animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full;
   }
 }

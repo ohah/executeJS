@@ -1,76 +1,54 @@
 import React from 'react';
-import { Box, Text, Flex, Spinner } from '@radix-ui/themes';
-import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
+import { PlayIcon } from '@radix-ui/react-icons';
 import type { OutputPanelProps } from '../../shared/types';
 
 export const OutputPanel: React.FC<OutputPanelProps> = ({
   result,
   isExecuting,
 }) => {
-  console.log('OutputPanel Debug:', {
-    result,
-    isExecuting,
-  });
-
   if (isExecuting) {
     return (
-      <Box className="h-full w-full p-4 bg-gray-2">
-        <Flex align="center" gap="2" className="text-gray-11">
-          <Spinner size="2" />
-          <Text size="2">코드를 실행 중입니다...</Text>
-        </Flex>
-      </Box>
+      <div className="h-full w-full p-6 bg-slate-900">
+        <div className="flex items-center justify-center h-full">
+          <div className="flex items-center gap-3 text-slate-400">
+            <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+            <span className="text-sm font-medium">코드를 실행 중입니다...</span>
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (!result) {
     return (
-      <Box className="h-full w-full p-4 bg-gray-2">
-        <Flex align="center" justify="center" className="h-full">
-          <Text size="3" className="text-gray-9">
-            Cmd+Enter를 눌러 코드를 실행하세요
-          </Text>
-        </Flex>
-      </Box>
+      <div className="h-full w-full p-6 bg-slate-900">
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-slate-800 rounded-lg flex items-center justify-center">
+              <PlayIcon className="w-8 h-8 text-slate-500" />
+            </div>
+            <h3 className="text-lg font-medium text-slate-300 mb-2">코드를 실행해보세요</h3>
+            <p className="text-sm text-slate-500">
+              Cmd+Enter를 눌러 JavaScript 코드를 실행할 수 있습니다
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box className="h-full w-full bg-gray-2 p-4">
-      {/* 실행 결과 헤더 */}
-      <Flex align="center" gap="2" className="mb-4">
-        {result.success ? (
-          <CheckCircledIcon className="text-green-9" width="16" height="16" />
-        ) : (
-          <CrossCircledIcon className="text-red-9" width="16" height="16" />
-        )}
-        <Text size="3" className="font-medium">
-          {result.success ? '실행 성공' : '실행 실패'}
-        </Text>
-        <Text size="2" className="text-gray-9 ml-auto">
-          {new Date(result.timestamp).toLocaleTimeString()}
-        </Text>
-      </Flex>
-
-      {/* 코드 */}
-      <Box className="mb-4">
-        <Text size="2" className="text-gray-11 mb-2 font-medium">
-          실행한 코드:
-        </Text>
-        <pre className="text-sm font-mono text-gray-12 bg-gray-4 p-3 rounded border">
-          {result.code}
-        </pre>
-      </Box>
-
-      {/* 결과 */}
-      <Box>
-        <Text size="2" className="text-gray-11 mb-2 font-medium">
-          실행 결과:
-        </Text>
-        <pre className="text-sm font-mono text-gray-12 whitespace-pre-wrap break-words bg-gray-4 p-3 rounded border min-h-[100px]">
-          {result.success ? result.result : result.error}
-        </pre>
-      </Box>
-    </Box>
+    <div className="h-full w-full bg-slate-900 overflow-y-auto">
+      {/* 실행 결과만 표시 - 화면 전체 사용 */}
+      <div className="h-full flex items-center justify-center p-6">
+        <div className="w-full">
+          <pre className="text-sm font-mono whitespace-pre-wrap break-words overflow-x-auto h-full flex items-center justify-center">
+            <code className={result.success ? 'text-green-400' : 'text-red-400'}>
+              {result.success ? result.result : result.error}
+            </code>
+          </pre>
+        </div>
+      </div>
+    </div>
   );
 };
