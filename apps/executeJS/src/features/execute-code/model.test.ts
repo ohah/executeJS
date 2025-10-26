@@ -21,7 +21,7 @@ describe('execute-code model', () => {
 
   it('should clear result', () => {
     const store = useExecutionStore.getState();
-    
+
     // 결과 설정 (직접 상태 변경)
     useExecutionStore.setState({
       result: {
@@ -29,7 +29,7 @@ describe('execute-code model', () => {
         result: 'output',
         timestamp: '2023-01-01T00:00:00.000Z',
         success: true,
-      }
+      },
     });
 
     store.clearResult();
@@ -42,7 +42,7 @@ describe('execute-code model', () => {
     expect(store.isExecuting).toBe(false);
 
     store.setExecuting(true);
-    
+
     // 상태 변경 후 다시 가져와서 확인
     const updatedState = useExecutionStore.getState();
     expect(updatedState.isExecuting).toBe(true);
