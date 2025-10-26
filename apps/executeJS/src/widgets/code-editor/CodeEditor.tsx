@@ -26,15 +26,24 @@ export const CodeEditor: React.FC<MonacoEditorProps> = ({
 
   // Monaco Editor 설정
   const handleEditorDidMount = (editor: any, monaco: any) => {
-    editorRef.current = editor;
+    try {
+      editorRef.current = editor;
 
-    // Cmd+Enter 키바인딩 추가
-    editor.addCommand(monaco.KeyMod.CmdOrCtrl | monaco.KeyCode.Enter, () => {
-      onExecute();
-    });
+      // Cmd+Enter 키바인딩 추가
+      if (monaco && monaco.KeyMod && monaco.KeyCode) {
+        editor.addCommand(
+          monaco.KeyMod.CmdOrCtrl | monaco.KeyCode.Enter,
+          () => {
+            onExecute();
+          }
+        );
+      }
 
-    // 에디터 포커스
-    editor.focus();
+      // 에디터 포커스
+      editor.focus();
+    } catch (error) {
+      console.error('Monaco Editor mount error:', error);
+    }
   };
 
   // 에디터 옵션
