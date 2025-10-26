@@ -12,6 +12,15 @@ on:
       - "docs/**"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Build Docs
@@ -38,12 +47,13 @@ jobs:
       - name: Build docs
         run: pnpm docs:build
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: docs-build
-          path: docs/doc_build
-          retention-days: 1
+          path: ./docs/doc_build
 
   deploy:
     name: Deploy Docs
@@ -52,17 +62,6 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: docs-build
-          path: docs/doc_build
-
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/doc_build
+        id: deployment
+        uses: actions/deploy-pages@v4
