@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @layer base {
   :root {
@@ -12,12 +12,6 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  body {
-    margin: 0;
-    min-width: 320px;
-    min-height: 100vh;
-  }
-
   * {
     box-sizing: border-box;
   }
@@ -27,15 +21,15 @@
   .editor-container {
     @apply h-full w-full flex flex-col;
   }
-  
+
   .panel-resize-handle {
     width: 0.25rem;
     background-color: hsl(0 0% 88.7%);
     transition: background-color 150ms;
     cursor: col-resize;
   }
-  
+
   .panel-resize-handle:hover {
-    background-color: hsl(0 0% 78.0%);
+    background-color: hsl(0 0% 78%);
   }
 }
