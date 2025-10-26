@@ -7,7 +7,10 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
   result,
   isExecuting,
 }) => {
-  if (isExecuting) {
+  const currentResult = result.get();
+  const currentIsExecuting = isExecuting.get();
+
+  if (currentIsExecuting) {
     return (
       <Box className="h-full w-full p-4 bg-gray-2">
         <Flex align="center" gap="2" className="text-gray-11">
@@ -18,7 +21,7 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
     );
   }
 
-  if (!result) {
+  if (!currentResult) {
     return (
       <Box className="h-full w-full p-4 bg-gray-2">
         <Flex align="center" justify="center" className="h-full">
@@ -38,23 +41,23 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
         align="center"
         gap="2"
       >
-        {result.success ? (
+        {currentResult.success ? (
           <CheckCircledIcon className="text-green-9" width="16" height="16" />
         ) : (
           <CrossCircledIcon className="text-red-9" width="16" height="16" />
         )}
         <Text size="2" className="font-medium">
-          {result.success ? '실행 성공' : '실행 실패'}
+          {currentResult.success ? '실행 성공' : '실행 실패'}
         </Text>
         <Text size="1" className="text-gray-9 ml-auto">
-          {new Date(result.timestamp).toLocaleTimeString()}
+          {new Date(currentResult.timestamp).toLocaleTimeString()}
         </Text>
       </Flex>
 
       {/* 결과 내용 */}
       <Box className="flex-1 p-4 overflow-auto">
         <pre className="text-sm font-mono text-gray-12 whitespace-pre-wrap break-words">
-          {result.success ? result.result : result.error}
+          {currentResult.success ? currentResult.result : currentResult.error}
         </pre>
       </Box>
     </Box>
