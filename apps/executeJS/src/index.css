@@ -15,6 +15,38 @@
   * {
     box-sizing: border-box;
   }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0f172a; /* slate-950 */
+    color: #f8fafc; /* slate-50 */
+  }
+
+  /* 스크롤바 스타일링 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #1e293b; /* slate-800 */
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #475569; /* slate-600 */
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #64748b; /* slate-500 */
+  }
+
+  /* 선택 영역 스타일링 */
+  ::selection {
+    background-color: #3b82f6; /* blue-500 */
+    color: white;
+  }
 }
 
 @layer components {
@@ -23,13 +55,13 @@
   }
 
   .panel-resize-handle {
-    width: 0.25rem;
-    background-color: hsl(0 0% 88.7%);
+    width: 4px;
+    background-color: #334155; /* slate-700 */
     transition: background-color 150ms;
     cursor: col-resize;
   }
 
   .panel-resize-handle:hover {
-    background-color: hsl(0 0% 78%);
+    background-color: #475569; /* slate-600 */
   }
 }

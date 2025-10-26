@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { Editor } from '@monaco-editor/react';
+import React, { useRef } from 'react';
+import { Editor, EditorProps } from '@monaco-editor/react';
 import type { CodeEditorProps } from '../../shared/types';
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -11,33 +11,17 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 }) => {
   const editorRef = useRef<any>(null);
 
-  // Cmd+Enter 키바인딩 설정
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-        event.preventDefault();
-        onExecute();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onExecute]);
-
   // Monaco Editor 설정
-  const handleEditorDidMount = (editor: any, monaco: any) => {
+  const handleEditorDidMount: EditorProps['onMount'] = (editor, monaco) => {
     try {
       editorRef.current = editor;
 
       // Cmd+Enter 키바인딩 추가
       if (monaco && monaco.KeyMod && monaco.KeyCode) {
-        editor.addCommand(
-          monaco.KeyMod.CmdOrCtrl | monaco.KeyCode.Enter,
-          () => {
-            const currentValue = editor.getValue();
-            onExecute?.(currentValue);
-          }
-        );
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+          const currentValue = editor.getValue();
+          onExecute?.(currentValue);
+        });
       }
 
       // 에디터 포커스
@@ -48,7 +32,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   // 에디터 옵션
-  const editorOptions = {
+  const editorOptions: EditorProps['options'] = {
     selectOnLineNumbers: true,
     roundedSelection: false,
     readOnly: false,
@@ -57,8 +41,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     minimap: { enabled: false },
     scrollBeyondLastLine: false,
     fontSize: 14,
-    lineHeight: 20,
-    fontFamily: 'JetBrains Mono, Fira Code, monospace',
+    lineHeight: 22,
+    fontFamily: 'JetBrains Mono, Fira Code, Consolas, Monaco, monospace',
     wordWrap: 'on' as const,
     wrappingIndent: 'indent' as const,
     tabSize: 2,
@@ -70,6 +54,23 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       bracketPairs: true,
       indentation: true,
     },
+    padding: { top: 16, bottom: 16 },
+    scrollbar: {
+      vertical: 'auto' as const,
+      horizontal: 'auto' as const,
+      useShadows: false,
+      verticalHasArrows: false,
+      horizontalHasArrows: false,
+      verticalScrollbarSize: 8,
+      horizontalScrollbarSize: 8,
+    },
+    contextmenu: true,
+    mouseWheelZoom: true,
+    cursorBlinking: 'blink' as const,
+    // Enter 키로 실행되지 않도록 설정
+    quickSuggestions: false,
+    suggestOnTriggerCharacters: false,
+    acceptSuggestionOnEnter: 'off' as const,
   };
 
   return (
