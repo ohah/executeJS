@@ -30,6 +30,13 @@ pub fn run() {
         builder
             .setup(|app_handle| {
                 // JavaScript 실행기 상태 관리
+                #[cfg(debug_assertions)]
+                {
+                    let window = app_handle.get_webview_window("main").unwrap();
+                    window.open_devtools();
+                    window.close_devtools();
+                }
+
                 app_handle.manage(js_executor::JsExecutorState::default());
 
                 // 앱 시작 시 초기화 작업
