@@ -22,24 +22,38 @@ export const EditorPage: React.FC = () => {
 
   // 컴포넌트 마운트 시 저장된 데이터 로드
   useEffect(() => {
-    tabActions.loadFromStorage();
-    executionActions.loadHistory();
+    // 초기화를 약간 지연시켜서 컴포넌트가 완전히 마운트된 후 실행
+    const timer = setTimeout(() => {
+      tabActions.loadFromStorage();
+      executionActions.loadHistory();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // 현재 활성 탭 가져오기
-  const activeTab = getActiveTab();
+  const activeTab = useObservable(() => getActiveTab());
+
+  // 디버깅용 로그
+  console.log('EditorPage Debug:', {
+    tabs: tabs,
+    activeTabId: activeTabId,
+    activeTab: activeTab.get(),
+  });
 
   // 코드 실행 핸들러
   const handleExecuteCode = () => {
-    if (activeTab) {
-      executionActions.executeCode(activeTab.code.get());
+    const currentTab = activeTab.get();
+    if (currentTab) {
+      executionActions.executeCode(currentTab.code);
     }
   };
 
   // 탭 코드 변경 핸들러
   const handleCodeChange = (code: string) => {
-    if (activeTab) {
-      tabActions.updateTabCode(activeTab.id.get(), code);
+    const currentTab = activeTab.get();
+    if (currentTab) {
+      tabActions.updateTabCode(currentTab.id, code);
     }
   };
 
@@ -60,14 +74,18 @@ export const EditorPage: React.FC = () => {
           {/* 왼쪽 패널 - 코드 에디터 */}
           <Panel defaultSize={50} minSize={30}>
             <div className="h-full bg-gray-2">
-              {activeTab && (
+              {activeTab.get() ? (
                 <CodeEditor
-                  value={activeTab.code.get()}
+                  value={activeTab.get()?.code || ''}
                   onChange={handleCodeChange}
                   onExecute={handleExecuteCode}
                   language="javascript"
                   theme="vs-dark"
                 />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-9">
+                  탭을 로딩 중...
+                </div>
               )}
             </div>
           </Panel>
