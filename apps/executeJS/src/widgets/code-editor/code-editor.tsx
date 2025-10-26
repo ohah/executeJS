@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { Editor } from '@monaco-editor/react';
+import React, { useRef } from 'react';
+import { Editor, EditorProps } from '@monaco-editor/react';
 import type { CodeEditorProps } from '../../shared/types';
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -11,28 +11,16 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 }) => {
   const editorRef = useRef<any>(null);
 
-  // Cmd+Enter 키바인딩 설정
-  useEffect(() => {
-    // const handleKeyDown = (event: KeyboardEvent) => {
-    //   if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-    //     event.preventDefault();
-    //     onExecute();
-    //   }
-    // };
-
-    // document.addEventListener('keydown', handleKeyDown);
-    // return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onExecute]);
 
   // Monaco Editor 설정
-  const handleEditorDidMount = (editor: any, monaco: any) => {
+  const handleEditorDidMount: EditorProps['onMount'] = (editor, monaco) => {
     try {
       editorRef.current = editor;
 
       // Cmd+Enter 키바인딩 추가
       if (monaco && monaco.KeyMod && monaco.KeyCode) {
         editor.addCommand(
-          monaco.KeyMod.CmdOrCtrl | monaco.KeyCode.Enter,
+          monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
           () => {
             const currentValue = editor.getValue();
             onExecute?.(currentValue);
@@ -49,7 +37,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   // 에디터 옵션
-  const editorOptions = {
+  const editorOptions: EditorProps['options'] = {
     selectOnLineNumbers: true,
     roundedSelection: false,
     readOnly: false,
@@ -83,9 +71,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     },
     contextmenu: true,
     mouseWheelZoom: true,
-    smoothScrolling: true,
     cursorBlinking: 'blink' as const,
-    cursorSmoothCaretAnimation: 'on' as const,
     // Enter 키로 실행되지 않도록 설정
     quickSuggestions: false,
     suggestOnTriggerCharacters: false,
