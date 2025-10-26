@@ -15,10 +15,10 @@ import {
 } from '../../features/execute-code/model';
 
 export const EditorPage: React.FC = () => {
-  const tabs = useObservable(tabsState.tabs);
-  const activeTabId = useObservable(tabsState.activeTabId);
-  const executionResult = useObservable(executionState.result);
-  const isExecuting = useObservable(executionState.isExecuting);
+  const tabs = useObservable(() => tabsState.tabs.get());
+  const activeTabId = useObservable(() => tabsState.activeTabId.get());
+  const executionResult = useObservable(() => executionState.result.get());
+  const isExecuting = useObservable(() => executionState.isExecuting.get());
 
   // 컴포넌트 마운트 시 저장된 데이터 로드
   useEffect(() => {
