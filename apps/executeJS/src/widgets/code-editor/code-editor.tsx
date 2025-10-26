@@ -11,7 +11,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 }) => {
   const editorRef = useRef<any>(null);
 
-
   // Monaco Editor 설정
   const handleEditorDidMount: EditorProps['onMount'] = (editor, monaco) => {
     try {
@@ -19,14 +18,10 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
       // Cmd+Enter 키바인딩 추가
       if (monaco && monaco.KeyMod && monaco.KeyCode) {
-        editor.addCommand(
-          monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-          () => {
-            const currentValue = editor.getValue();
-            onExecute?.(currentValue);
-          }
-        );
-
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+          const currentValue = editor.getValue();
+          onExecute?.(currentValue);
+        });
       }
 
       // 에디터 포커스

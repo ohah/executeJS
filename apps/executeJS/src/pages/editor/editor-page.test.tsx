@@ -16,8 +16,6 @@ vi.mock('@legendapp/state/react', () => ({
 describe('EditorPage', () => {
   it('renders without crashing', () => {
     render(<EditorPage />);
-    expect(
-      screen.getByText(/실행 \(Cmd\+Enter\)/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/실행 \(Cmd\+Enter\)/)).toBeInTheDocument();
   });
 });

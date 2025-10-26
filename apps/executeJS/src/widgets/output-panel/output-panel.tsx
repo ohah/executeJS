@@ -19,9 +19,7 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
   }
 
   if (!result) {
-    return (
-      <div className="h-screen w-full p-6 bg-slate-900" />
-    );
+    return <div className="h-screen w-full p-6 bg-slate-900" />;
   }
 
   return (
@@ -30,7 +28,9 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({
       <div className="h-full flex p-6">
         <div className="w-full">
           <pre className="text-sm font-mono whitespace-pre-wrap break-words overflow-x-auto h-full flex">
-            <code className={result.success ? 'text-green-400' : 'text-red-400'}>
+            <code
+              className={result.success ? 'text-green-400' : 'text-red-400'}
+            >
               {result.success ? result.result : result.error}
             </code>
           </pre>

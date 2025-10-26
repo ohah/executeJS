@@ -62,7 +62,9 @@ export const EditorPage: React.FC = () => {
           <Panel defaultSize={50} minSize={30}>
             <div className="h-full bg-slate-900 border-r border-slate-800">
               <div className="h-8 bg-slate-800 border-b border-slate-700 flex items-center px-4">
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Editor</span>
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                  Editor
+                </span>
               </div>
               <div className="h-[calc(100%-2rem)]">
                 <CodeEditor
@@ -83,10 +85,15 @@ export const EditorPage: React.FC = () => {
           <Panel defaultSize={50} minSize={30}>
             <div className="h-full bg-slate-900">
               <div className="h-8 bg-slate-800 border-b border-slate-700 flex items-center px-4">
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Output</span>
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                  Output
+                </span>
               </div>
               <div className="h-[calc(100%-2rem)]">
-                <OutputPanel result={executionResult} isExecuting={isExecuting} />
+                <OutputPanel
+                  result={executionResult}
+                  isExecuting={isExecuting}
+                />
               </div>
             </div>
           </Panel>
