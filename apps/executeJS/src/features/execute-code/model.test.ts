@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { executionState, executionActions } from './model';
+import { useExecutionStore } from './model';
 
 // Tauri API 모킹
 vi.mock('@tauri-apps/api/core', () => ({
@@ -9,34 +9,42 @@ vi.mock('@tauri-apps/api/core', () => ({
 describe('execute-code model', () => {
   beforeEach(() => {
     // 각 테스트 전에 상태 초기화
-    executionState.result.set(null);
-    executionState.isExecuting.set(false);
-    executionState.history.set([]);
+    useExecutionStore.getState().clearResult();
+    useExecutionStore.getState().setExecuting(false);
   });
 
   it('should initialize with empty state', () => {
-    expect(executionState.result.get()).toBeNull();
-    expect(executionState.isExecuting.get()).toBe(false);
-    expect(executionState.history.get()).toEqual([]);
+    const state = useExecutionStore.getState();
+    expect(state.result).toBeNull();
+    expect(state.isExecuting).toBe(false);
   });
 
   it('should clear result', () => {
-    executionState.result.set({
-      code: 'test',
-      result: 'output',
-      timestamp: '2023-01-01T00:00:00.000Z',
-      success: true,
+    const store = useExecutionStore.getState();
+    
+    // 결과 설정 (직접 상태 변경)
+    useExecutionStore.setState({
+      result: {
+        code: 'test',
+        result: 'output',
+        timestamp: '2023-01-01T00:00:00.000Z',
+        success: true,
+      }
     });
 
-    executionActions.clearResult();
+    store.clearResult();
 
-    expect(executionState.result.get()).toBeNull();
+    expect(store.result).toBeNull();
   });
 
   it('should handle execution state changes', () => {
-    expect(executionState.isExecuting.get()).toBe(false);
+    const store = useExecutionStore.getState();
+    expect(store.isExecuting).toBe(false);
 
-    // executeCode는 비동기이므로 isExecuting 상태만 확인
-    // 실제 실행은 Tauri API가 필요하므로 모킹 필요
+    store.setExecuting(true);
+    
+    // 상태 변경 후 다시 가져와서 확인
+    const updatedState = useExecutionStore.getState();
+    expect(updatedState.isExecuting).toBe(true);
   });
 });
