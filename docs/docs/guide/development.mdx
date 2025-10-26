@@ -110,9 +110,60 @@ chore: 빌드 설정 변경
 
 ## 아키텍처
 
-### 프론트엔드 (React + TypeScript)
+### FSD (Feature-Sliced Design) 아키텍처
 
-- **상태 관리**: React Hooks (useState, useEffect)
+ExecuteJS 프론트엔드는 FSD 아키텍처를 사용하여 코드를 체계적으로 구성합니다.
+
+#### 폴더 구조
+
+```
+src/
+├── app/                      # 앱 초기화 및 프로바이더
+│   ├── index.tsx            # 앱 루트 컴포넌트
+│   └── providers.tsx        # 전역 프로바이더 (Legend State, Radix UI)
+├── pages/                   # 페이지 레벨 컴포넌트
+│   └── editor/
+│       └── EditorPage.tsx   # 메인 에디터 페이지
+├── widgets/                 # 복합 UI 블록
+│   ├── code-editor/
+│   │   └── CodeEditor.tsx   # Monaco Editor 래퍼
+│   ├── output-panel/
+│   │   └── OutputPanel.tsx  # 출력 결과 패널
+│   └── tab-bar/
+│       └── TabBar.tsx       # 탭 관리 UI
+├── features/                # 비즈니스 로직 기능
+│   ├── execute-code/
+│   │   ├── model.ts         # 실행 상태 및 로직
+│   │   └── api.ts           # Tauri command 호출
+│   └── manage-tabs/
+│       └── model.ts         # 탭 관리 상태 (localStorage 연동)
+├── shared/                  # 공유 유틸리티
+│   ├── ui/                  # 공통 UI 컴포넌트
+│   ├── lib/                 # 유틸 함수
+│   └── types/               # 공통 타입
+└── main.tsx                 # Vite 엔트리
+```
+
+#### 레이어별 역할
+
+- **app/**: 앱 초기화, 전역 프로바이더 설정
+- **pages/**: 페이지 레벨 컴포넌트 (라우팅 단위)
+- **widgets/**: 복합 UI 블록 (여러 features 조합)
+- **features/**: 비즈니스 로직 기능 (도메인별)
+- **shared/**: 공유 유틸리티 (재사용 가능)
+
+#### 의존성 규칙
+
+- 상위 레이어는 하위 레이어를 import 가능
+- 같은 레이어 내에서는 import 금지
+- shared는 다른 모든 레이어에서 import 가능
+
+### 프론트엔드 기술 스택
+
+- **상태 관리**: Legend State (반응형 상태 관리)
+- **UI 라이브러리**: Radix UI + Tailwind CSS
+- **코드 에디터**: Monaco Editor
+- **레이아웃**: react-resizable-panels
 - **빌드 도구**: Vite
 - **테스팅**: Vitest + Testing Library
 - **린팅**: oxlint + Prettier
@@ -120,6 +171,7 @@ chore: 빌드 설정 변경
 ### 백엔드 (Rust + Tauri)
 
 - **프레임워크**: Tauri 2.0
+- **JavaScript 엔진**: Deno Core 0.323 (V8 기반)
 - **테스팅**: cargo test
 - **린팅**: rustfmt + clippy
 - **로깅**: tracing
@@ -129,3 +181,75 @@ chore: 빌드 설정 변경
 - **pnpm 워크스페이스**: Node.js 패키지 관리
 - **Cargo 워크스페이스**: Rust 크레이트 관리
 - **조건부 CI**: 폴더별 변경사항에 따른 워크플로우 실행
+
+## 상태 관리 (Legend State)
+
+### 기본 사용법
+
+```typescript
+import { observable } from '@legendapp/state';
+import { useObservable } from '@legendapp/state/react';
+
+// 상태 정의
+const state = observable({
+  count: 0,
+  name: 'ExecuteJS'
+});
+
+// 컴포넌트에서 사용
+function Counter() {
+  const count = useObservable(state.count);
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => state.count++}>
+        Increment
+      </button>
+    </div>
+  );
+}
+```
+
+### 액션 패턴
+
+```typescript
+// features/counter/model.ts
+export const counterState = observable({
+  count: 0,
+});
+
+export const counterActions = {
+  increment: () => counterState.count++,
+  decrement: () => counterState.count--,
+  reset: () => (counterState.count = 0),
+};
+```
+
+## UI 컴포넌트 (Radix UI + Tailwind)
+
+### Radix UI 사용법
+
+```typescript
+import { Button, Box, Text } from '@radix-ui/themes';
+
+function MyComponent() {
+  return (
+    <Box className="p-4 bg-gray-2 rounded-lg">
+      <Text size="3" className="text-gray-12">
+        Hello World
+      </Text>
+      <Button variant="solid" size="2">
+        Click me
+      </Button>
+    </Box>
+  );
+}
+```
+
+### Tailwind CSS 클래스
+
+- **색상**: `bg-gray-2`, `text-gray-12`, `border-gray-6`
+- **간격**: `p-4`, `m-2`, `gap-2`
+- **레이아웃**: `flex`, `grid`, `h-full`, `w-full`
+- **상태**: `hover:bg-gray-4`, `focus:ring-2`

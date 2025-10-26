@@ -8,13 +8,14 @@ ExecuteJS는 JavaScript 코드를 안전하게 실행할 수 있는 Tauri 기반
 
 ### 기술 스택
 
-- **Frontend**: React 19, TypeScript, Vite
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS 4.x
 - **Backend**: Rust, Tauri 2.0
 - **Testing**: Vitest, Testing Library
 - **Linting**: oxlint, Prettier, rustfmt, clippy
 - **Documentation**: RSPress
 - **Package Manager**: pnpm
 - **CI/CD**: GitHub Actions
+- **Architecture**: Feature-Sliced Design (FSD)
 
 ### 모노레포 구조
 
@@ -69,6 +70,9 @@ pnpm type-check            # 타입 검사
 - **포맷터**: Prettier
 - **타입**: TypeScript strict 모드
 - **테스트**: Vitest + Testing Library
+- **아키텍처**: Feature-Sliced Design (FSD)
+- **스타일링**: Tailwind CSS 4.x
+- **경로 별칭**: `@/*` → `./src/*`
 
 ### Rust
 
@@ -109,12 +113,46 @@ chore: 빌드 설정 변경
 
 ## 아키텍처
 
+### Feature-Sliced Design (FSD)
+
+프로젝트는 FSD 아키텍처를 따릅니다:
+
+```
+src/
+├── app/                    # 앱 초기화 및 프로바이더
+├── pages/                  # 페이지 레벨 컴포넌트
+├── widgets/                # 복합 UI 블록
+├── features/               # 비즈니스 로직 기능
+└── shared/                 # 공유 유틸리티
+    ├── ui/                 # UI 컴포넌트
+    └── types/              # 타입 정의
+```
+
+#### FSD 레이어 규칙
+
+- **app** → pages, widgets, features, shared
+- **pages** → widgets, features, shared
+- **widgets** → features, shared
+- **features** → shared
+- **shared** → (다른 레이어 import 금지)
+
+#### 파일 명명 규칙
+
+- React 컴포넌트: kebab-case (예: `editor-page.tsx`)
+- 각 레이어에 `index.ts` 파일로 export 정리
+- `export * from` 패턴 사용
+
+#### 경로 별칭
+
+- `@/*` → `./src/*` (TypeScript, Vite 설정)
+- 절대 경로 import 사용 권장
+
 ### 프론트엔드 (React)
 
 - **상태 관리**: React Hooks
 - **빌드 도구**: Vite
 - **테스팅**: Vitest + Testing Library
-- **스타일링**: CSS Modules
+- **스타일링**: Tailwind CSS 4.x
 
 ### 백엔드 (Rust + Tauri)
 
@@ -161,6 +199,10 @@ chore: 빌드 설정 변경
 3. **테스트**: 새로운 기능은 테스트 포함 필요
 4. **문서화**: API 변경 시 문서 업데이트 필요
 5. **CI/CD**: 모든 워크플로우가 성공해야 함
+6. **FSD 아키텍처**: 레이어 간 의존성 규칙 준수 필수
+7. **파일 명명**: kebab-case 사용 (예: `editor-page.tsx`)
+8. **Import 경로**: `@` 별칭 사용 권장
+9. **Export 정리**: 각 레이어의 `index.ts`에서 `export * from` 패턴 사용
 
 ## 문제 해결
 

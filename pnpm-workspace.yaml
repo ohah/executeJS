@@ -2,7 +2,8 @@ packages:
   - apps/*
   - packages/*
   - docs
-  
+
 onlyBuiltDependencies:
+  - '@parcel/watcher'
   - core-js
   - esbuild

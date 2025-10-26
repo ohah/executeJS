@@ -12,7 +12,10 @@
 - `.github/workflows/`: CI/CD 워크플로우
 
 ### 기술 스택
-- **Frontend**: React 18, TypeScript, Vite, Vitest
+- **Frontend**: React 19, TypeScript, Vite, Vitest
+- **UI**: Radix UI + Tailwind CSS
+- **상태 관리**: Legend State
+- **코드 에디터**: Monaco Editor
 - **Backend**: Rust, Tauri 2.0
 - **JavaScript Engine**: Deno Core 0.323 (V8 기반)
 - **Package Manager**: pnpm
@@ -49,6 +52,33 @@ apps/executeJS/src-tauri/src/
 - ✅ 문법 오류 감지 (실제 JavaScript 엔진 수준)
 - ✅ Chrome DevTools 수준의 출력
 
+## FSD 아키텍처 규칙
+
+### 폴더 구조
+```
+src/
+├── app/                      # 앱 초기화 및 프로바이더
+├── pages/                    # 페이지 레벨 컴포넌트
+├── widgets/                  # 복합 UI 블록
+├── features/                 # 비즈니스 로직 기능
+├── shared/                   # 공유 유틸리티
+└── main.tsx                  # Vite 엔트리
+```
+
+### 의존성 규칙
+- **app** → pages, widgets, features, shared
+- **pages** → widgets, features, shared
+- **widgets** → features, shared
+- **features** → shared
+- **shared** → (다른 레이어 import 금지)
+
+### 레이어별 책임
+- **app/**: 앱 초기화, 전역 프로바이더
+- **pages/**: 페이지 레벨 컴포넌트 (라우팅 단위)
+- **widgets/**: 복합 UI 블록 (여러 features 조합)
+- **features/**: 비즈니스 로직 (도메인별)
+- **shared/**: 재사용 가능한 유틸리티
+
 ## 코딩 규칙
 
 ### JavaScript/TypeScript
@@ -57,6 +87,8 @@ apps/executeJS/src-tauri/src/
 - TypeScript strict 모드
 - Vitest + Testing Library로 테스트
 - 함수형 컴포넌트와 Hooks 사용
+- Legend State로 상태 관리
+- Radix UI + Tailwind CSS로 스타일링
 
 ### Rust
 - rustfmt 기본 설정 사용 (4 스페이스)
