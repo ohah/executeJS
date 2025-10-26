@@ -1,8 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import { Editor } from '@monaco-editor/react';
-import type { MonacoEditorProps } from '../../shared/types';
+import type { CodeEditorProps } from '../../shared/types';
 
-export const CodeEditor: React.FC<MonacoEditorProps> = ({
+export const CodeEditor: React.FC<CodeEditorProps> = ({
   value,
   onChange,
   onExecute,
@@ -34,7 +34,8 @@ export const CodeEditor: React.FC<MonacoEditorProps> = ({
         editor.addCommand(
           monaco.KeyMod.CmdOrCtrl | monaco.KeyCode.Enter,
           () => {
-            onExecute();
+            const currentValue = editor.getValue();
+            onExecute?.(currentValue);
           }
         );
       }
@@ -72,9 +73,10 @@ export const CodeEditor: React.FC<MonacoEditorProps> = ({
   };
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full min-h-0">
       <Editor
-        height="100%"
+        height="500px"
+        width="100%"
         language={language}
         theme={theme}
         value={value}

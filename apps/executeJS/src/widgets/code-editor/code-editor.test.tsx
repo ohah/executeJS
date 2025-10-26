@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { CodeEditor } from './CodeEditor';
+import { CodeEditor } from './code-editor';
 import '@testing-library/jest-dom';
 
 // Monaco Editor 모킹
