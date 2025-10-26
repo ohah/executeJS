@@ -29,7 +29,7 @@ export const EditorPage: React.FC = () => {
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-1">
       {/* 메인 컨텐츠 영역 */}
-      <div className="flex-1 flex h-[300px]">
+      <div className="flex-1 flex h-screen">
         <PanelGroup direction="horizontal" className="flex-1 h-full border">
           {/* 왼쪽 패널 - 코드 에디터 */}
           <Panel defaultSize={50} minSize={30}>

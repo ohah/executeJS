@@ -75,7 +75,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   return (
     <div className="h-full w-full min-h-0">
       <Editor
-        height="500px"
+        height="100%"
         width="100%"
         language={language}
         theme={theme}
