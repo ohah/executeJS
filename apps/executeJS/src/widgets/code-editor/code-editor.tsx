@@ -13,15 +13,15 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
   // Cmd+Enter 키바인딩 설정
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
-        event.preventDefault();
-        onExecute();
-      }
-    };
+    // const handleKeyDown = (event: KeyboardEvent) => {
+    //   if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+    //     event.preventDefault();
+    //     onExecute();
+    //   }
+    // };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    // document.addEventListener('keydown', handleKeyDown);
+    // return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onExecute]);
 
   // Monaco Editor 설정
@@ -38,6 +38,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             onExecute?.(currentValue);
           }
         );
+
       }
 
       // 에디터 포커스
@@ -85,6 +86,10 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     smoothScrolling: true,
     cursorBlinking: 'blink' as const,
     cursorSmoothCaretAnimation: 'on' as const,
+    // Enter 키로 실행되지 않도록 설정
+    quickSuggestions: false,
+    suggestOnTriggerCharacters: false,
+    acceptSuggestionOnEnter: 'off' as const,
   };
 
   return (

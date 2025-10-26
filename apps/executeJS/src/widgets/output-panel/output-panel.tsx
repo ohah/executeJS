@@ -1,5 +1,4 @@
 import React from 'react';
-import { PlayIcon } from '@radix-ui/react-icons';
 import type { OutputPanelProps } from '../../shared/types';
 
 export const OutputPanel: React.FC<OutputPanelProps> = ({
