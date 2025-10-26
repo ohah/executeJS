@@ -10,6 +10,9 @@ export const TabBar: React.FC<TabBarProps> = ({
   onTabClose,
   onTabAdd,
 }) => {
+  const tabsArray = tabs.get();
+  const currentActiveTabId = activeTabId.get();
+
   return (
     <Flex
       className="bg-gray-3 border-b border-gray-6 h-10"
@@ -18,14 +21,14 @@ export const TabBar: React.FC<TabBarProps> = ({
     >
       {/* 탭 목록 */}
       <Flex className="flex-1 overflow-x-auto" align="center">
-        {tabs.map((tab: any) => (
+        {tabsArray.map((tab: any) => (
           <Flex
             key={tab.id}
             className={`
               px-3 py-2 cursor-pointer border-r border-gray-6 min-w-0 flex-1 max-w-48
               transition-colors duration-150
               ${
-                tab.id === activeTabId
+                tab.id === currentActiveTabId
                   ? 'bg-gray-2 text-gray-12'
                   : 'bg-gray-3 text-gray-11 hover:bg-gray-4'
               }
@@ -39,7 +42,7 @@ export const TabBar: React.FC<TabBarProps> = ({
               {tab.isDirty && '*'}
             </Text>
 
-            {tabs.length > 1 && (
+            {tabsArray.length > 1 && (
               <IconButton
                 size="1"
                 variant="ghost"
