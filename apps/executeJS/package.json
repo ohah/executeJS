@@ -30,6 +30,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.16",
     "@tauri-apps/cli": "latest",
     "@vitejs/plugin-react": "latest",
     "autoprefixer": "^10.4.21",
