@@ -17,7 +17,7 @@ describe('EditorPage', () => {
   it('renders without crashing', () => {
     render(<EditorPage />);
     expect(
-      screen.getByText(/코드를 실행해보세요/)
+      screen.getByText(/실행 \(Cmd\+Enter\)/)
     ).toBeInTheDocument();
   });
 });

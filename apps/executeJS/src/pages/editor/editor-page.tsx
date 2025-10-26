@@ -3,7 +3,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { CodeEditor } from '@/widgets/code-editor';
 import { OutputPanel } from '@/widgets/output-panel';
 import { useExecutionStore } from '@/features/execute-code';
-import { PlayIcon, StopIcon, TrashIcon } from '@radix-ui/react-icons';
+import { PlayIcon, StopIcon } from '@radix-ui/react-icons';
 
 export const EditorPage: React.FC = () => {
   const [code, setCode] = useState('console.log("Hello, ExecuteJS!");');
@@ -11,7 +11,6 @@ export const EditorPage: React.FC = () => {
     result: executionResult,
     isExecuting,
     executeCode,
-    clearResult,
   } = useExecutionStore();
 
   // 코드 실행 핸들러
@@ -27,22 +26,14 @@ export const EditorPage: React.FC = () => {
     setCode(newCode);
   };
 
-  // 결과 초기화
-  const handleClearResult = () => {
-    clearResult();
-  };
-
   return (
     <div className="h-screen w-screen flex flex-col bg-slate-950 text-white">
       {/* 헤더 */}
       <div className="flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          <div className="ml-4 text-sm font-medium text-slate-300">ExecuteJS</div>
+          <div className="text-sm font-medium text-slate-300">ExecuteJS</div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleExecuteCode()}
@@ -61,16 +52,6 @@ export const EditorPage: React.FC = () => {
               </>
             )}
           </button>
-          
-          {executionResult && (
-            <button
-              onClick={handleClearResult}
-              className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm font-medium rounded-md transition-colors"
-            >
-              <TrashIcon className="w-4 h-4" />
-              초기화
-            </button>
-          )}
         </div>
       </div>
 
