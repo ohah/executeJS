@@ -37,8 +37,6 @@ pub fn run() {
                     window.close_devtools();
                 }
 
-                app_handle.manage(js_executor::JsExecutorState::default());
-
                 // 앱 시작 시 초기화 작업
                 tauri::async_runtime::spawn(async {
                     tracing::info!("ExecuteJS 애플리케이션이 시작되었습니다.");
@@ -52,15 +50,7 @@ pub fn run() {
                     tracing::info!("ExecuteJS 애플리케이션이 종료됩니다.");
                 }
             })
-            .invoke_handler(tauri::generate_handler![
-                greet,
-                execute_js,
-                get_js_execution_history,
-                clear_js_execution_history,
-                save_js_code,
-                load_js_code,
-                get_app_info
-            ])
+            .invoke_handler(tauri::generate_handler![execute_js, get_app_info])
             .run(tauri::generate_context!())
             .expect("error while running tauri application");
     }

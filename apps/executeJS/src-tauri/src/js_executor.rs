@@ -12,50 +12,6 @@ pub struct JsExecutionResult {
     pub error: Option<String>,
 }
 
-#[derive(Debug)]
-pub struct JsExecutorState {
-    pub history: Mutex<VecDeque<JsExecutionResult>>,
-    pub max_history: usize,
-}
-
-impl JsExecutorState {
-    pub fn new(max_history: usize) -> Self {
-        Self {
-            history: Mutex::new(VecDeque::new()),
-            max_history,
-        }
-    }
-
-    pub fn add_execution(&self, result: JsExecutionResult) {
-        if let Ok(mut history) = self.history.lock() {
-            history.push_back(result);
-            if history.len() > self.max_history {
-                history.pop_front();
-            }
-        }
-    }
-
-    pub fn get_history(&self) -> Vec<JsExecutionResult> {
-        if let Ok(history) = self.history.lock() {
-            history.iter().cloned().collect()
-        } else {
-            vec![]
-        }
-    }
-
-    pub fn clear_history(&self) {
-        if let Ok(mut history) = self.history.lock() {
-            history.clear();
-        }
-    }
-}
-
-impl Default for JsExecutorState {
-    fn default() -> Self {
-        Self::new(100) // 최대 100개의 실행 기록 보관
-    }
-}
-
 pub async fn execute_javascript_code(code: &str) -> JsExecutionResult {
     let timestamp = chrono::Utc::now();
 

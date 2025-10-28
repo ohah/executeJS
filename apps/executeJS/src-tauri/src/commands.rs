@@ -1,4 +1,4 @@
-use crate::js_executor::{execute_javascript_code, JsExecutionResult, JsExecutorState};
+use crate::js_executor::{execute_javascript_code, JsExecutionResult};
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
@@ -17,14 +17,8 @@ pub fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-pub async fn execute_js(
-    code: &str,
-    state: State<'_, JsExecutorState>,
-) -> Result<JsExecutionResult, String> {
+pub async fn execute_js(code: &str) -> Result<JsExecutionResult, String> {
     let result = execute_javascript_code(code).await;
-
-    // 실행 결과를 히스토리에 추가
-    state.add_execution(result.clone());
 
     if result.success {
         Ok(result)
@@ -33,47 +27,6 @@ pub async fn execute_js(
             .error
             .unwrap_or_else(|| "알 수 없는 오류".to_string()))
     }
-}
-
-#[tauri::command]
-pub fn get_js_execution_history(state: State<JsExecutorState>) -> Vec<JsExecutionResult> {
-    state.get_history()
-}
-
-#[tauri::command]
-pub fn clear_js_execution_history(state: State<JsExecutorState>) -> Result<(), String> {
-    state.clear_history();
-    Ok(())
-}
-
-#[tauri::command]
-pub fn save_js_code(code: &str, filename: &str) -> Result<String, String> {
-    use std::fs;
-    use std::path::Path;
-
-    let code_dir = Path::new("saved_codes");
-    if !code_dir.exists() {
-        fs::create_dir_all(code_dir).map_err(|e| format!("디렉토리 생성 실패: {}", e))?;
-    }
-
-    let file_path = code_dir.join(filename);
-    fs::write(&file_path, code).map_err(|e| format!("파일 저장 실패: {}", e))?;
-
-    Ok(format!("코드가 {}에 저장되었습니다", file_path.display()))
-}
-
-#[tauri::command]
-pub fn load_js_code(filename: &str) -> Result<String, String> {
-    use std::fs;
-    use std::path::Path;
-
-    let file_path = Path::new("saved_codes").join(filename);
-
-    if !file_path.exists() {
-        return Err("파일을 찾을 수 없습니다".to_string());
-    }
-
-    fs::read_to_string(&file_path).map_err(|e| format!("파일 읽기 실패: {}", e))
 }
 
 #[tauri::command]
