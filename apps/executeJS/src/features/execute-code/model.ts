@@ -20,8 +20,6 @@ export const useExecutionStore = create<ExecutionState>()(
 
       // 코드 실행
       executeCode: async (code: string) => {
-        console.log('executeCode called -', code);
-
         set({ isExecuting: true });
 
         try {
@@ -37,15 +35,15 @@ export const useExecutionStore = create<ExecutionState>()(
             result,
             isExecuting: false,
           });
-        } catch (error) {
+        } catch (error: any) {
+          //TODO: @ohah 에러 처리 더 명확하게 할 것
           const result: JsExecutionResult = {
             code,
-            result: '',
+            result: error?.result ?? '',
             timestamp: new Date().toISOString(),
             success: false,
-            error: error instanceof Error ? error.message : '알 수 없는 오류',
+            error: error?.error ?? '알 수 없는 오류',
           };
-
           set({
             result,
             isExecuting: false,
