@@ -24,7 +24,8 @@ export const PlaygroundGroups: React.FC = () => {
 
   const handleAddTab = () => {
     setTabs((prevTabs) => {
-      const newTabId = `playground-${prevTabs.length + 1}`;
+      const date = new Date().valueOf();
+      const newTabId = `playground-${date}`;
       const newTab: Tab = {
         id: newTabId,
         title: `Playground ${prevTabs.length + 1}`,
