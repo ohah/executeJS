@@ -7,7 +7,9 @@ import { PlayIcon, StopIcon } from '@radix-ui/react-icons';
 
 const getInitialCode = (): string => {
   try {
-    const executionStorage = localStorage.getItem('executejs-execution-storage');
+    const executionStorage = localStorage.getItem(
+      'executejs-execution-storage'
+    );
 
     if (executionStorage) {
       const parsed = JSON.parse(executionStorage);
@@ -22,7 +24,7 @@ const getInitialCode = (): string => {
   } catch (error) {
     console.error('error from executionStorage:', error);
   }
-  
+
   return 'console.log("Hello, ExecuteJS!");';
 };
 
