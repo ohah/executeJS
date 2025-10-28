@@ -24,10 +24,10 @@ export const PlaygroundGroups: React.FC = () => {
 
   const handleAddTab = () => {
     setTabs((prevTabs) => {
-      const newTabId = `playground-${tabs.length + 1}`;
+      const newTabId = `playground-${prevTabs.length + 1}`;
       const newTab: Tab = {
         id: newTabId,
-        title: `Playground ${tabs.length + 1}`,
+        title: `Playground ${prevTabs.length + 1}`,
       };
 
       return [...prevTabs, newTab];
