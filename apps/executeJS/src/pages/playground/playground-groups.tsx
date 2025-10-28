@@ -44,11 +44,16 @@ export const PlaygroundGroups: React.FC = () => {
                 key={id}
                 className="shrink-0 flex items-center p-2 border-r border-slate-800"
               >
-                {/* TODO: 탭 최대 너비에 따른 제목 ellipsis 처리 */}
+                {/* TODO: 탭 최대 너비에 따른 제목 ellipsis 처리 @bori */}
                 <button
                   type="button"
                   onClick={() => {
                     // TODO: 탭 전환 로직 @bori
+                  }}
+                  onContextMenu={(event) => {
+                    event.preventDefault();
+                    // TODO: 탭 우클릭 메뉴 로직 @bori
+                    console.log('우클릭 메뉴 -', id);
                   }}
                   className="pr-2"
                 >
@@ -74,6 +79,8 @@ export const PlaygroundGroups: React.FC = () => {
           <PlusIcon />
         </button>
       </div>
+
+      {/* TODO: 활성화된 탭에 따른 플레이그라운드 렌더링 @bori */}
       <PlaygroundPage />
     </div>
   );
