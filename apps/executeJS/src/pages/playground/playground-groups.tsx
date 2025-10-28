@@ -69,7 +69,7 @@ export const PlaygroundGroups: React.FC = () => {
         <button
           type="button"
           onClick={handleAddTab}
-          className="shrink-0 p-2 cursor-pointer"
+          className="shrink-0 p-2 ml-1 rounded-sm hover:bg-[rgba(255,255,255,0.2)] transition-colors cursor-pointer"
         >
           <PlusIcon />
         </button>
