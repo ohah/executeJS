@@ -4,141 +4,26 @@ ExecuteJS에서 사용할 수 있는 모든 Tauri 명령어를 확인하세요.
 
 ## 기본 명령어
 
-### greet
-
-인사말을 반환하는 기본 명령어입니다.
-
-```typescript
-import { invoke } from '@tauri-apps/api/core';
-
-const message = await invoke('greet', { name: 'World' });
-console.log(message); // "Hello World! You've been greeted from Rust!"
-```
-
-**매개변수:**
-- `name` (string): 인사할 이름
-
-**반환값:**
-- `string`: 인사 메시지
-
 ### execute_js
 
-JavaScript 코드를 실행합니다.
+자바스크립트에 실행을 요청하는 명령어입니다.
 
 ```typescript
 import { invoke } from '@tauri-apps/api/core';
 
-const result = await invoke('execute_js', { 
-  code: 'console.log("Hello, World!");' 
+const result = await invoke('execute_js', {
+  code: 'console.log("Hello, World!");',
 });
 console.log(result);
 ```
 
 **매개변수:**
+
 - `code` (string): 실행할 JavaScript 코드
 
 **반환값:**
+
 - `JsExecutionResult`: 실행 결과 객체
-
-## 실행 기록 관리
-
-### get_js_execution_history
-
-JavaScript 실행 기록을 가져옵니다.
-
-```typescript
-import { invoke } from '@tauri-apps/api/core';
-
-const history = await invoke('get_js_execution_history');
-console.log(history); // JsExecutionResult[]
-```
-
-**반환값:**
-- `JsExecutionResult[]`: 실행 기록 배열
-
-### clear_js_execution_history
-
-JavaScript 실행 기록을 모두 삭제합니다.
-
-```typescript
-import { invoke } from '@tauri-apps/api/core';
-
-await invoke('clear_js_execution_history');
-```
-
-## 코드 저장/로드
-
-### save_js_code
-
-JavaScript 코드를 로컬에 저장합니다.
-
-```typescript
-import { invoke } from '@tauri-apps/api/core';
-
-await invoke('save_js_code', { 
-  code: 'console.log("Saved code");' 
-});
-```
-
-**매개변수:**
-- `code` (string): 저장할 JavaScript 코드
-
-### load_js_code
-
-저장된 JavaScript 코드를 불러옵니다.
-
-```typescript
-import { invoke } from '@tauri-apps/api/core';
-
-const code = await invoke('load_js_code');
-console.log(code); // string
-```
-
-**반환값:**
-- `string`: 저장된 JavaScript 코드
-
-## 앱 정보
-
-### get_app_info
-
-애플리케이션 정보를 가져옵니다.
-
-```typescript
-import { invoke } from '@tauri-apps/api/core';
-
-const appInfo = await invoke('get_app_info');
-console.log(appInfo);
-```
-
-**반환값:**
-- `AppInfo`: 애플리케이션 정보 객체
-
-## 타입 정의
-
-### JsExecutionResult
-
-```typescript
-interface JsExecutionResult {
-  id: string;
-  code: string;
-  result: string;
-  success: boolean;
-  timestamp: string;
-  executionTime: number;
-}
-```
-
-### AppInfo
-
-```typescript
-interface AppInfo {
-  name: string;
-  version: string;
-  tauriVersion: string;
-  platform: string;
-  arch: string;
-}
-```
 
 ## 에러 처리
 

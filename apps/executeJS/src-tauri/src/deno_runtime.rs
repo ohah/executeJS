@@ -146,22 +146,8 @@ impl DenoExecutor {
                 return Err(anyhow::anyhow!("Bootstrap 실행 실패: {}", e));
             }
 
-            // JavaScript 코드를 즉시 실행 함수로 래핑
-            let wrapped_code = format!(
-                r#"
-                (async () => {{
-                    try {{
-                        {}
-                    }} catch (error) {{
-                        console.error('Error:', error.message);
-                    }}
-                }})();
-                "#,
-                code
-            );
-
             // 코드 실행
-            let result = js_runtime.execute_script("[executejs:user_code]", wrapped_code)?;
+            let result = js_runtime.execute_script("[executejs:user_code]", code)?;
 
             // 이벤트 루프 실행 (Promise 처리) - 블로킹 방식으로 변경
             let rt = tokio::runtime::Handle::current();
