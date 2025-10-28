@@ -7,7 +7,9 @@ interface Tab {
   title: string;
 }
 
-const initialTabs: Tab[] = [{ id: 'playground-1', title: 'Playground 1' }];
+const INITIAL_TAB_TITLE = '✨New Playground';
+
+const initialTabs: Tab[] = [{ id: 'playground-1', title: INITIAL_TAB_TITLE }];
 
 export const PlaygroundGroups: React.FC = () => {
   const [tabs, setTabs] = useState<Tab[]>(initialTabs);
@@ -28,7 +30,7 @@ export const PlaygroundGroups: React.FC = () => {
       const newTabId = `playground-${date}`;
       const newTab: Tab = {
         id: newTabId,
-        title: `Playground ${prevTabs.length + 1}`,
+        title: INITIAL_TAB_TITLE,
       };
 
       return [...prevTabs, newTab];
