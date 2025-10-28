@@ -66,6 +66,21 @@ export const useExecutionStore = create<ExecutionState>()(
       partialize: (state) => ({
         result: state.result,
       }),
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('hydration failed:', error);
+          // persist 실패 시 localStorage 정리
+          localStorage.removeItem('executejs-execution-storage');
+          
+          return;
+        }
+        
+        if (state) {
+          console.log('hydration success');
+          // 앱 재시작 시 실행 중이었던 상태를 초기화
+          state.setExecuting(false);
+        }
+      },
     }
   )
 );
