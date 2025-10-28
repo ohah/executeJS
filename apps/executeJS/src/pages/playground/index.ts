@@ -1,1 +1,1 @@
-export * from './editor-page';
+export * from './playground-page';
