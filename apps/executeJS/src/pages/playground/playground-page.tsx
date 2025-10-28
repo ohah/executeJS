@@ -5,7 +5,7 @@ import { OutputPanel } from '@/widgets/output-panel';
 import { useExecutionStore } from '@/features/execute-code';
 import { PlayIcon, StopIcon } from '@radix-ui/react-icons';
 
-export const EditorPage: React.FC = () => {
+export const PlaygroundPage: React.FC = () => {
   const [code, setCode] = useState('console.log("Hello, ExecuteJS!");');
   const {
     result: executionResult,
