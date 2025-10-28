@@ -1,7 +1,5 @@
-use crate::deno_runtime::DenoExecutor;
+use deno_runtime::DenoExecutor;
 use serde::{Deserialize, Serialize};
-use std::collections::VecDeque;
-use std::sync::Mutex;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JsExecutionResult {

@@ -1,0 +1,20 @@
+[package]
+name = "deno-runtime"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Deno Core 기반 JavaScript 런타임"
+
+[dependencies]
+# Workspace dependencies
+anyhow.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+# Deno Core dependencies
+deno_core = "0.323"
+
+[dev-dependencies]
+tokio.workspace = true

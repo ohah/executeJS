@@ -1011,6 +1011,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "deno-runtime"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "deno_core",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "deno_core"
 version = "0.323.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1398,7 +1408,7 @@ dependencies = [
  "anyhow",
  "bytes",
  "chrono",
- "deno_core",
+ "deno-runtime",
  "flate2",
  "futures-util",
  "http-body-util",
