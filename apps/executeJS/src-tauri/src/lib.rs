@@ -4,7 +4,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod commands;
-mod deno_runtime;
 mod js_executor;
 
 use commands::*;

@@ -1,6 +1,5 @@
 use crate::js_executor::{execute_javascript_code, JsExecutionResult};
 use serde::{Deserialize, Serialize};
-use tauri::State;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AppInfo {
