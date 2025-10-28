@@ -40,7 +40,7 @@ pub async fn execute_javascript_code(code: &str) -> JsExecutionResult {
             result: String::new(),
             timestamp,
             success: false,
-            error: Some(format!("JavaScript 실행 오류: {}", error)),
+            error: Some(format!("{}", error)),
         },
     }
 }
@@ -48,15 +48,13 @@ pub async fn execute_javascript_code(code: &str) -> JsExecutionResult {
 /// Deno를 사용한 JavaScript 코드 실행
 async fn execute_with_deno(code: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     // DenoExecutor 생성
-    let mut executor = DenoExecutor::new()
-        .await
-        .map_err(|e| format!("Deno 런타임 초기화 실패: {}", e))?;
+    let mut executor = DenoExecutor::new().await.map_err(|e| format!("{}", e))?;
 
     // 코드 실행
     let result = executor
         .execute_script("index.js", code)
         .await
-        .map_err(|e| format!("JavaScript 실행 실패: {}", e))?;
+        .map_err(|e| format!("{}", e))?;
 
     Ok(result)
 }
