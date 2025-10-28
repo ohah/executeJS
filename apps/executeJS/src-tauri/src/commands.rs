@@ -10,22 +10,24 @@ pub struct AppInfo {
     pub author: String,
 }
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
-pub fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[tauri::command]
-pub async fn execute_js(code: &str) -> Result<JsExecutionResult, String> {
+pub async fn execute_js(code: &str) -> Result<JsExecutionResult, JsExecutionResult> {
     let result = execute_javascript_code(code).await;
 
     if result.success {
         Ok(result)
     } else {
-        Err(result
+        let error_message = result
             .error
-            .unwrap_or_else(|| "알 수 없는 오류".to_string()))
+            .unwrap_or_else(|| "알 수 없는 오류".to_string());
+
+        Err(JsExecutionResult {
+            code: code.to_string(),
+            result: error_message.clone(),
+            timestamp: chrono::Utc::now(),
+            success: false,
+            error: Some(error_message.clone()),
+        })
     }
 }
 
