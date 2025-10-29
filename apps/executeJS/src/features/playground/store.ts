@@ -9,7 +9,7 @@ interface Tab {
   active: boolean;
 }
 
-interface Playground {
+export interface Playground {
   id: string;
   result: JsExecutionResult | null;
   isExecuting: boolean;
