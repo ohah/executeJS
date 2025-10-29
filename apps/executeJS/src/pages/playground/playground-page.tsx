@@ -5,8 +5,32 @@ import { OutputPanel } from '@/widgets/output-panel';
 import { useExecutionStore } from '@/features/execute-code';
 import { PlayIcon, StopIcon } from '@radix-ui/react-icons';
 
+const getInitialCode = (): string => {
+  try {
+    const executionStorage = localStorage.getItem(
+      'executejs-execution-storage'
+    );
+
+    if (executionStorage) {
+      const parsed = JSON.parse(executionStorage);
+      const code = parsed?.state?.result?.code;
+
+      if (code) {
+        console.log('result from executionStorage:', code);
+
+        return code;
+      }
+    }
+  } catch (error) {
+    console.error('error from executionStorage:', error);
+  }
+
+  return 'console.log("Hello, ExecuteJS!");';
+};
+
 export const PlaygroundPage: React.FC = () => {
-  const [code, setCode] = useState('console.log("Hello, ExecuteJS!");');
+  // FIXME: tab이 여러개 생기거나 global store로 상태가 이동되면 수정되어야함
+  const [code, setCode] = useState(getInitialCode);
   const {
     result: executionResult,
     isExecuting,
