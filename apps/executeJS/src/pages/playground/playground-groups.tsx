@@ -4,14 +4,16 @@ import { usePlaygroundStore } from '@/features/playground';
 import { PlaygroundWidget } from '@/widgets/playground';
 
 export const PlaygroundGroups: React.FC = () => {
-  const { tabs, addTab, closeTab, setActiveTab, playgrounds } =
+  const { tabs, activeTabId, addTab, closeTab, setActiveTab, playgrounds } =
     usePlaygroundStore();
 
   return (
     <div className="overflow-hidden w-screen h-screen">
       <div className="overflow-x-auto flex items-center border-b border-slate-800">
         <div className="flex shrink-0">
-          {tabs.map(({ id, title, active }) => {
+          {tabs.map(({ id, title }) => {
+            const active = id === activeTabId;
+
             return (
               <div
                 key={id}
@@ -58,7 +60,8 @@ export const PlaygroundGroups: React.FC = () => {
       </div>
 
       {tabs.map((tab) => {
-        const { active, playgroundId, id } = tab;
+        const { playgroundId, id } = tab;
+        const active = tab.id === activeTabId;
         const playground = playgrounds.get(playgroundId);
 
         if (!active || !playground) return null;

@@ -6,7 +6,6 @@ interface Tab {
   id: string;
   playgroundId: Playground['id'];
   title: string;
-  active: boolean;
 }
 
 export interface Playground {
@@ -20,6 +19,7 @@ export interface Playground {
 
 interface PlaygroundState {
   tabs: Tab[];
+  activeTabId: Tab['id'];
   playgrounds: Map<Playground['id'], Playground>;
   addTab: () => void;
   closeTab: (tabId: Tab['id']) => void;
@@ -33,7 +33,6 @@ const INITIAL_PLAYGROUND_ID = 'first-playground';
 const initialTab: Tab = {
   id: INITIAL_TAB_ID,
   playgroundId: INITIAL_PLAYGROUND_ID,
-  active: true,
   title: INITIAL_TAB_TITLE,
 };
 
@@ -41,6 +40,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
   persist(
     (set) => ({
       tabs: [initialTab],
+      activeTabId: INITIAL_TAB_ID,
       playgrounds: new Map([
         [
           INITIAL_PLAYGROUND_ID,
@@ -59,14 +59,8 @@ export const usePlaygroundStore = create<PlaygroundState>()(
           const newTab: Tab = {
             id: newTabId,
             playgroundId: newPlaygroundId,
-            active: true,
             title: INITIAL_TAB_TITLE,
           };
-
-          const prevTabs = state.tabs.map((tab) => ({
-            ...tab,
-            active: false,
-          }));
 
           const newPlaygrounds = new Map(state.playgrounds);
           newPlaygrounds.set(newPlaygroundId, {
@@ -76,7 +70,8 @@ export const usePlaygroundStore = create<PlaygroundState>()(
           });
 
           return {
-            tabs: [...prevTabs, newTab],
+            tabs: [...state.tabs, newTab],
+            activeTabId: newTabId,
             playgrounds: newPlaygrounds,
           };
         });
@@ -104,20 +99,14 @@ export const usePlaygroundStore = create<PlaygroundState>()(
 
       // 탭 활성화
       setActiveTab: (tabId: Tab['id']) => {
-        set((state) => {
-          const tabs = state.tabs.map((tab) => ({
-            ...tab,
-            active: tab.id === tabId,
-          }));
-
-          return { tabs };
-        });
+        set({ activeTabId: tabId });
       },
     }),
     {
       name: 'executejs-playground-store',
       partialize: (state) => ({
         tabs: state.tabs,
+        activeTabId: state.activeTabId,
         playgrounds: state.playgrounds,
       }),
       storage: createJSONStorage(() => localStorage, {
