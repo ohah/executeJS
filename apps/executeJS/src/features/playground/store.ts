@@ -23,6 +23,7 @@ interface PlaygroundState {
   playgrounds: Map<Playground['id'], Playground>;
   addTab: () => void;
   closeTab: (tabId: Tab['id']) => void;
+  setActiveTab: (tabId: Tab['id']) => void;
 }
 
 const INITIAL_TAB_TITLE = '✨New Playground';
@@ -98,6 +99,18 @@ export const usePlaygroundStore = create<PlaygroundState>()(
             tabs,
             playgrounds,
           };
+        });
+      },
+
+      // 탭 활성화
+      setActiveTab: (tabId: Tab['id']) => {
+        set((state) => {
+          const tabs = state.tabs.map((tab) => ({
+            ...tab,
+            active: tab.id === tabId,
+          }));
+
+          return { tabs };
         });
       },
     }),
