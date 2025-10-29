@@ -1,6 +1,6 @@
 import { JsExecutionResult } from '@/shared';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface Tab {
   id: string;
@@ -13,15 +13,16 @@ interface Playground {
   id: string;
   result: JsExecutionResult | null;
   isExecuting: boolean;
-  setExecuting: (executing: boolean) => void;
+  // setExecuting: (executing: boolean) => void;
   // executeCode: (code: string) => void;
   // clearResult: () => void;
 }
 
 interface PlaygroundState {
   tabs: Tab[];
-  playgrounds: Record<Playground['id'], Playground>;
+  playgrounds: Map<Playground['id'], Playground>;
   addTab: () => void;
+  closeTab: (tabId: Tab['id']) => void;
 }
 
 const INITIAL_TAB_TITLE = '✨New Playground';
@@ -39,7 +40,12 @@ export const usePlaygroundStore = create<PlaygroundState>()(
   persist(
     (set) => ({
       tabs: [initialTab],
-      playgrounds: {},
+      playgrounds: new Map([
+        [
+          INITIAL_PLAYGROUND_ID,
+          { id: INITIAL_PLAYGROUND_ID, result: null, isExecuting: false },
+        ],
+      ]),
 
       // 탭 추가
       addTab: () => {
@@ -61,8 +67,36 @@ export const usePlaygroundStore = create<PlaygroundState>()(
             active: false,
           }));
 
+          const newPlaygrounds = new Map(state.playgrounds);
+          newPlaygrounds.set(newPlaygroundId, {
+            id: newPlaygroundId,
+            result: null,
+            isExecuting: false,
+          });
+
           return {
             tabs: [...prevTabs, newTab],
+            playgrounds: newPlaygrounds,
+          };
+        });
+      },
+
+      // 탭 닫기
+      closeTab: (tabId: Tab['id']) => {
+        set((state) => {
+          const closingTab = state.tabs.find((tab) => tab.id === tabId);
+          const tabsLength = state.tabs.length;
+
+          if (!closingTab || tabsLength === 1) return state;
+
+          const tabs = state.tabs.filter((tab) => tab.id !== tabId);
+          const playgrounds = new Map(state.playgrounds);
+
+          playgrounds.delete(closingTab.playgroundId);
+
+          return {
+            tabs,
+            playgrounds,
           };
         });
       },
@@ -72,6 +106,23 @@ export const usePlaygroundStore = create<PlaygroundState>()(
       partialize: (state) => ({
         tabs: state.tabs,
         playgrounds: state.playgrounds,
+      }),
+      storage: createJSONStorage(() => localStorage, {
+        replacer: (key, value) => {
+          if (value instanceof Map) {
+            return {
+              _type: 'map',
+              value: Array.from(value.entries()),
+            };
+          }
+          return value;
+        },
+        reviver: (key, value: any) => {
+          if (value && value._type === 'map') {
+            return new Map(value.value);
+          }
+          return value;
+        },
       }),
     }
   )
