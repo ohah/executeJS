@@ -122,7 +122,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
         playgrounds: state.playgrounds,
       }),
       storage: createJSONStorage(() => localStorage, {
-        replacer: (key, value) => {
+        replacer: (_, value) => {
           if (value instanceof Map) {
             return {
               _type: 'map',
@@ -131,7 +131,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
           }
           return value;
         },
-        reviver: (key, value: any) => {
+        reviver: (_, value: any) => {
           if (value && value._type === 'map') {
             return new Map(value.value);
           }
