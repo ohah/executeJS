@@ -1,40 +1,19 @@
-import { useState } from 'react';
-import { PlaygroundPage } from './playground-page';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 
-interface Tab {
-  id: string;
-  title: string;
-}
+import { usePlaygroundStore } from '@/features/playground';
 
-const INITIAL_TAB_TITLE = '✨New Playground';
-
-const initialTabs: Tab[] = [{ id: 'playground-1', title: INITIAL_TAB_TITLE }];
+import { PlaygroundPage } from './playground-page';
 
 export const PlaygroundGroups: React.FC = () => {
-  const [tabs, setTabs] = useState<Tab[]>(initialTabs);
+  const { tabs, addTab } = usePlaygroundStore();
 
   const handleCloseTab = (tabId: string) => {
-    setTabs((prevTabs) => {
-      if (prevTabs.length === 1) {
-        return prevTabs; // 최소 하나의 탭은 유지
-      }
-
-      return prevTabs.filter((tab) => tab.id !== tabId);
-    });
-  };
-
-  const handleAddTab = () => {
-    setTabs((prevTabs) => {
-      const date = new Date().valueOf();
-      const newTabId = `playground-${date}`;
-      const newTab: Tab = {
-        id: newTabId,
-        title: INITIAL_TAB_TITLE,
-      };
-
-      return [...prevTabs, newTab];
-    });
+    // setTabs((prevTabs) => {
+    //   if (prevTabs.length === 1) {
+    //     return prevTabs; // 최소 하나의 탭은 유지
+    //   }
+    //   return prevTabs.filter((tab) => tab.id !== tabId);
+    // });
   };
 
   return (
@@ -76,7 +55,7 @@ export const PlaygroundGroups: React.FC = () => {
 
         <button
           type="button"
-          onClick={handleAddTab}
+          onClick={addTab}
           className="shrink-0 p-2 ml-1 rounded-sm hover:bg-[rgba(255,255,255,0.2)] transition-colors cursor-pointer"
         >
           <PlusIcon />
