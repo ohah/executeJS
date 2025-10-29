@@ -28,7 +28,7 @@ const getInitialCode = (): string => {
   return 'console.log("Hello, ExecuteJS!");';
 };
 
-export const EditorPage: React.FC = () => {
+export const PlaygroundPage: React.FC = () => {
   // FIXME: tab이 여러개 생기거나 global store로 상태가 이동되면 수정되어야함
   const [code, setCode] = useState(getInitialCode);
   const {
