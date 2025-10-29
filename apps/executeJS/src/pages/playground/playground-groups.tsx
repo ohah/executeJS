@@ -5,16 +5,7 @@ import { usePlaygroundStore } from '@/features/playground';
 import { PlaygroundPage } from './playground-page';
 
 export const PlaygroundGroups: React.FC = () => {
-  const { tabs, addTab } = usePlaygroundStore();
-
-  const handleCloseTab = (tabId: string) => {
-    // setTabs((prevTabs) => {
-    //   if (prevTabs.length === 1) {
-    //     return prevTabs; // 최소 하나의 탭은 유지
-    //   }
-    //   return prevTabs.filter((tab) => tab.id !== tabId);
-    // });
-  };
+  const { tabs, addTab, closeTab } = usePlaygroundStore();
 
   return (
     <div className="overflow-hidden w-screen h-screen">
@@ -43,7 +34,7 @@ export const PlaygroundGroups: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleCloseTab(id)}
+                  onClick={() => closeTab(id)}
                   className="p-1 rounded-sm hover:bg-[rgba(255,255,255,0.2)] transition-colors cursor-pointer"
                 >
                   <Cross2Icon />
