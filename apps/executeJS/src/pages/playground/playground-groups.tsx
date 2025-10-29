@@ -1,11 +1,10 @@
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 
 import { usePlaygroundStore } from '@/features/playground';
-
-import { PlaygroundPage } from './playground-page';
+import { PlaygroundWidget } from '@/widgets/playground';
 
 export const PlaygroundGroups: React.FC = () => {
-  const { tabs, addTab, closeTab } = usePlaygroundStore();
+  const { tabs, addTab, closeTab, playgrounds } = usePlaygroundStore();
 
   return (
     <div className="overflow-hidden w-screen h-screen">
@@ -53,8 +52,14 @@ export const PlaygroundGroups: React.FC = () => {
         </button>
       </div>
 
-      {/* TODO: 활성화된 탭에 따른 플레이그라운드 렌더링 @bori */}
-      <PlaygroundPage />
+      {tabs.map((tab) => {
+        const { active, playgroundId, id } = tab;
+        const playground = playgrounds.get(playgroundId);
+
+        if (!active || !playground) return null;
+
+        return <PlaygroundWidget key={id} playground={playground} />;
+      })}
     </div>
   );
 };
