@@ -20,6 +20,7 @@ export interface Playground {
 interface PlaygroundState {
   tabs: Tab[];
   activeTabId: Tab['id'];
+  tabHistory: Tab['id'][];
   playgrounds: Map<Playground['id'], Playground>;
   addTab: () => void;
   closeTab: (tabId: Tab['id']) => void;
@@ -41,6 +42,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
     (set) => ({
       tabs: [initialTab],
       activeTabId: INITIAL_TAB_ID,
+      tabHistory: [INITIAL_TAB_ID],
       playgrounds: new Map([
         [
           INITIAL_PLAYGROUND_ID,
@@ -72,6 +74,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
           return {
             tabs: [...state.tabs, newTab],
             activeTabId: newTabId,
+            tabHistory: [...state.tabHistory, newTabId],
             playgrounds: newPlaygrounds,
           };
         });
@@ -86,12 +89,17 @@ export const usePlaygroundStore = create<PlaygroundState>()(
           if (!closingTab || tabsLength === 1) return state;
 
           const tabs = state.tabs.filter((tab) => tab.id !== tabId);
+          const tabHistory = state.tabHistory.filter((id) => id !== tabId);
+          const lastActiveTabId =
+            tabHistory[tabHistory.length - 1] || tabs[0].id;
           const playgrounds = new Map(state.playgrounds);
 
           playgrounds.delete(closingTab.playgroundId);
 
           return {
             tabs,
+            activeTabId: lastActiveTabId,
+            tabHistory,
             playgrounds,
           };
         });
@@ -99,7 +107,10 @@ export const usePlaygroundStore = create<PlaygroundState>()(
 
       // 탭 활성화
       setActiveTab: (tabId: Tab['id']) => {
-        set({ activeTabId: tabId });
+        set((state) => ({
+          activeTabId: tabId,
+          tabHistory: [...state.tabHistory, tabId],
+        }));
       },
     }),
     {
@@ -107,6 +118,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
       partialize: (state) => ({
         tabs: state.tabs,
         activeTabId: state.activeTabId,
+        tabHistory: state.tabHistory,
         playgrounds: state.playgrounds,
       }),
       storage: createJSONStorage(() => localStorage, {
