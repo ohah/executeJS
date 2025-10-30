@@ -137,7 +137,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
           const playground = playgrounds.get(playgroundId);
 
           if (playground) {
-            playground.isExecuting = true;
+            playgrounds.set(playgroundId, { ...playground, isExecuting: true });
           }
 
           return { playgrounds };
@@ -157,8 +157,11 @@ export const usePlaygroundStore = create<PlaygroundState>()(
             const playground = playgrounds.get(playgroundId);
 
             if (playground) {
-              playground.result = result;
-              playground.isExecuting = false;
+              playgrounds.set(playgroundId, {
+                ...playground,
+                result: result,
+                isExecuting: false,
+              });
             }
 
             return { playgrounds };
@@ -178,8 +181,11 @@ export const usePlaygroundStore = create<PlaygroundState>()(
             const playground = playgrounds.get(playgroundId);
 
             if (playground) {
-              playground.result = result;
-              playground.isExecuting = false;
+              playgrounds.set(playgroundId, {
+                ...playground,
+                result: result,
+                isExecuting: false,
+              });
             }
 
             return { playgrounds };
