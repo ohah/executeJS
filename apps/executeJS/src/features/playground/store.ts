@@ -107,10 +107,18 @@ export const usePlaygroundStore = create<PlaygroundState>()(
 
       // 탭 활성화
       setActiveTab: (tabId: Tab['id']) => {
-        set((state) => ({
-          activeTabId: tabId,
-          tabHistory: [...state.tabHistory, tabId],
-        }));
+        set((state) => {
+          const lastTabId = state.tabHistory[state.tabHistory.length - 1];
+
+          if (lastTabId === tabId) {
+            return state;
+          }
+
+          return {
+            activeTabId: tabId,
+            tabHistory: [...state.tabHistory, tabId],
+          };
+        });
       },
     }),
     {
