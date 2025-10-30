@@ -123,12 +123,6 @@ export const usePlaygroundStore = create<PlaygroundState>()(
     }),
     {
       name: 'executejs-playground-store',
-      partialize: (state) => ({
-        tabs: state.tabs,
-        activeTabId: state.activeTabId,
-        tabHistory: state.tabHistory,
-        playgrounds: state.playgrounds,
-      }),
       storage: createJSONStorage(() => localStorage, {
         replacer: (_, value) => {
           if (value instanceof Map) {
