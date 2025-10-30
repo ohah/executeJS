@@ -6,7 +6,7 @@ import { PlayIcon, StopIcon } from '@radix-ui/react-icons';
 import { CodeEditor } from '@/widgets/code-editor';
 import { OutputPanel } from '@/widgets/output-panel';
 import {
-  getInitialCode,
+  DEFAULT_PLAYGROUND_CODE,
   Playground,
   usePlaygroundStore,
 } from '@/features/playground';
@@ -18,7 +18,9 @@ interface PlaygroundProps {
 export const PlaygroundWidget: React.FC<PlaygroundProps> = ({ playground }) => {
   const { id, isExecuting, result: executionResult } = playground;
 
-  const [code, setCode] = useState(getInitialCode(id));
+  const [code, setCode] = useState(
+    executionResult?.code || DEFAULT_PLAYGROUND_CODE
+  );
 
   const { executeCode } = usePlaygroundStore();
 
