@@ -1,6 +1,7 @@
 import { JsExecutionResult } from '@/shared';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { PLAYGROUND_STORAGE_KEY } from './const';
 
 interface Tab {
   id: string;
@@ -187,7 +188,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
       },
     }),
     {
-      name: 'executejs-playground-store',
+      name: PLAYGROUND_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage, {
         replacer: (_, value) => {
           if (value instanceof Map) {
