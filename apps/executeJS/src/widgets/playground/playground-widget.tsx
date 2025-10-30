@@ -5,8 +5,7 @@ import { PlayIcon, StopIcon } from '@radix-ui/react-icons';
 
 import { CodeEditor } from '@/widgets/code-editor';
 import { OutputPanel } from '@/widgets/output-panel';
-import { useExecutionStore } from '@/features/execute-code';
-import { Playground } from '@/features/playground';
+import { Playground, usePlaygroundStore } from '@/features/playground';
 
 const getInitialCode = (): string => {
   try {
@@ -36,22 +35,18 @@ interface PlaygroundProps {
 }
 
 export const PlaygroundWidget: React.FC<PlaygroundProps> = ({ playground }) => {
-  // TODO: playground prop 로직 추가 예정 @bori
-  console.log('PlaygroundWidget', playground);
+  const { isExecuting, result: executionResult } = playground;
 
   // FIXME: tab이 여러개 생기거나 global store로 상태가 이동되면 수정되어야함
   const [code, setCode] = useState(getInitialCode);
-  const {
-    result: executionResult,
-    isExecuting,
-    executeCode,
-  } = useExecutionStore();
+
+  const { executeCode } = usePlaygroundStore();
 
   // 코드 실행 핸들러
   const handleExecuteCode = (codeToExecute?: string) => {
     const codeToRun = codeToExecute || code;
     if (codeToRun.trim()) {
-      executeCode(codeToRun);
+      executeCode({ code: codeToRun, playgroundId: playground.id });
     }
   };
 
