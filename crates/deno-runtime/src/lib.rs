@@ -166,7 +166,7 @@ impl DenoExecutor {
             );
 
             // 코드 실행
-            let _result = js_runtime.execute_script("[executejs:user_code]", wrapped_code)?;
+            let result = js_runtime.execute_script("[executejs:user_code]", wrapped_code)?;
 
             // 이벤트 루프 실행 (Promise 처리) - 블로킹 방식으로 변경
             let rt = tokio::runtime::Handle::current();
