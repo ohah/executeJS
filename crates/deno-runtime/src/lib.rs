@@ -93,7 +93,6 @@ fn op_custom_print(#[string] message: String, is_err: bool) -> Result<(), AnyErr
     Ok(())
 }
 
-/// 커스텀 확장 정의
 extension!(
     executejs_runtime,
     ops = [op_console_log, op_alert, op_custom_print],
@@ -146,15 +145,32 @@ impl DenoExecutor {
                 return Err(anyhow::anyhow!("Bootstrap 실행 실패: {}", e));
             }
 
+            // 사용자 코드를 래핑하여 마지막 표현식의 결과를 자동으로 출력
+            // eval을 사용하여 마지막 표현식의 결과를 캡처하고 출력
+            let wrapped_code = format!(
+                r#"
+                (function() {{
+                    try {{
+                        const code_output = eval(`{}`);
+                        if (code_output !== undefined) {{
+                            Deno.core.ops.op_console_log(String(code_output));
+                        }}
+                        return code_output;
+                    }} catch (e) {{
+                        // eval 실패 시 원본 코드를 그대로 실행
+                        throw e;
+                    }}
+                }})();
+                "#,
+                code.replace('`', r"\`").replace('\\', r"\\")
+            );
+
             // 코드 실행
-            let result = js_runtime.execute_script("[executejs:user_code]", code)?;
+            let _result = js_runtime.execute_script("[executejs:user_code]", wrapped_code)?;
 
             // 이벤트 루프 실행 (Promise 처리) - 블로킹 방식으로 변경
             let rt = tokio::runtime::Handle::current();
             rt.block_on(async { js_runtime.run_event_loop(Default::default()).await })?;
-
-            // 결과 처리
-            let _ = result;
 
             // 출력 버퍼에서 결과 가져오기
             let output = output_buffer.lock().unwrap();
