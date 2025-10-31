@@ -1,6 +1,7 @@
 import { JsExecutionResult } from '@/shared';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { PLAYGROUND_STORAGE_KEY } from './const';
 
 interface Tab {
   id: string;
@@ -12,8 +13,6 @@ export interface Playground {
   id: string;
   result: JsExecutionResult | null;
   isExecuting: boolean;
-  // setExecuting: (executing: boolean) => void;
-  // executeCode: (code: string) => void;
   // clearResult: () => void;
 }
 
@@ -25,6 +24,10 @@ interface PlaygroundState {
   addTab: () => void;
   closeTab: (tabId: Tab['id']) => void;
   setActiveTab: (tabId: Tab['id']) => void;
+  executeCode: (params: {
+    playgroundId: Playground['id'];
+    code: string;
+  }) => void;
 }
 
 const INITIAL_TAB_TITLE = '✨New Playground';
@@ -120,9 +123,78 @@ export const usePlaygroundStore = create<PlaygroundState>()(
           };
         });
       },
+
+      // 플레이그라운드 별 코드 실행
+      executeCode: async ({
+        playgroundId,
+        code,
+      }: {
+        playgroundId: Playground['id'];
+        code: string;
+      }) => {
+        set((state) => {
+          const playgrounds = new Map(state.playgrounds);
+          const playground = playgrounds.get(playgroundId);
+
+          if (playground) {
+            playgrounds.set(playgroundId, { ...playground, isExecuting: true });
+          }
+
+          return { playgrounds };
+        });
+
+        try {
+          // Tauri 백엔드의 execute_js 명령어 호출
+          const { invoke } = await import('@tauri-apps/api/core');
+          const result = await invoke<JsExecutionResult>('execute_js', {
+            code,
+          });
+
+          console.log('executeCode result -', result);
+
+          set((state) => {
+            const playgrounds = new Map(state.playgrounds);
+            const playground = playgrounds.get(playgroundId);
+
+            if (playground) {
+              playgrounds.set(playgroundId, {
+                ...playground,
+                result: result,
+                isExecuting: false,
+              });
+            }
+
+            return { playgrounds };
+          });
+        } catch (error: any) {
+          //TODO: @ohah 에러 처리 더 명확하게 할 것
+          const result: JsExecutionResult = {
+            code,
+            result: error?.result ?? '',
+            timestamp: new Date().toISOString(),
+            success: false,
+            error: error?.error ?? '알 수 없는 오류',
+          };
+
+          set((state) => {
+            const playgrounds = new Map(state.playgrounds);
+            const playground = playgrounds.get(playgroundId);
+
+            if (playground) {
+              playgrounds.set(playgroundId, {
+                ...playground,
+                result: result,
+                isExecuting: false,
+              });
+            }
+
+            return { playgrounds };
+          });
+        }
+      },
     }),
     {
-      name: 'executejs-playground-store',
+      name: PLAYGROUND_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage, {
         replacer: (_, value) => {
           if (value instanceof Map) {

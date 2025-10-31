@@ -5,53 +5,30 @@ import { PlayIcon, StopIcon } from '@radix-ui/react-icons';
 
 import { CodeEditor } from '@/widgets/code-editor';
 import { OutputPanel } from '@/widgets/output-panel';
-import { useExecutionStore } from '@/features/execute-code';
-import { Playground } from '@/features/playground';
-
-const getInitialCode = (): string => {
-  try {
-    const executionStorage = localStorage.getItem(
-      'executejs-execution-storage'
-    );
-
-    if (executionStorage) {
-      const parsed = JSON.parse(executionStorage);
-      const code = parsed?.state?.result?.code;
-
-      if (code) {
-        console.log('result from executionStorage:', code);
-
-        return code;
-      }
-    }
-  } catch (error) {
-    console.error('error from executionStorage:', error);
-  }
-
-  return 'console.log("Hello, ExecuteJS!");';
-};
+import {
+  DEFAULT_PLAYGROUND_CODE,
+  Playground,
+  usePlaygroundStore,
+} from '@/features/playground';
 
 interface PlaygroundProps {
   playground: Playground;
 }
 
 export const PlaygroundWidget: React.FC<PlaygroundProps> = ({ playground }) => {
-  // TODO: playground prop 로직 추가 예정 @bori
-  console.log('PlaygroundWidget', playground);
+  const { id, isExecuting, result: executionResult } = playground;
 
-  // FIXME: tab이 여러개 생기거나 global store로 상태가 이동되면 수정되어야함
-  const [code, setCode] = useState(getInitialCode);
-  const {
-    result: executionResult,
-    isExecuting,
-    executeCode,
-  } = useExecutionStore();
+  const [code, setCode] = useState(
+    executionResult?.code || DEFAULT_PLAYGROUND_CODE
+  );
+
+  const { executeCode } = usePlaygroundStore();
 
   // 코드 실행 핸들러
   const handleExecuteCode = (codeToExecute?: string) => {
     const codeToRun = codeToExecute || code;
     if (codeToRun.trim()) {
-      executeCode(codeToRun);
+      executeCode({ code: codeToRun, playgroundId: id });
     }
   };
 
