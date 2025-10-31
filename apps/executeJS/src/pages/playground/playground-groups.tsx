@@ -3,10 +3,24 @@ import { PlusIcon } from '@radix-ui/react-icons';
 import { TabButton } from '@/features/tab';
 import { usePlaygroundStore } from '@/features/playground';
 import { PlaygroundWidget } from '@/widgets/playground';
+import { useState } from 'react';
 
 export const PlaygroundGroups: React.FC = () => {
   const { tabs, activeTabId, addTab, closeTab, setActiveTab, playgrounds } =
     usePlaygroundStore();
+
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+
+    setContextMenu({ x: event.clientX, y: event.clientY });
+  };
+
+  const handleCloseContextMenu = () => setContextMenu(null);
 
   return (
     <div className="overflow-hidden w-screen h-screen">
@@ -21,8 +35,11 @@ export const PlaygroundGroups: React.FC = () => {
                 key={id}
                 tab={tab}
                 isActive={isActive}
+                contextMenu={contextMenu}
                 onActiveTab={setActiveTab}
                 onCloseTab={closeTab}
+                onContextMenu={handleContextMenu}
+                onCloseContextMenu={handleCloseContextMenu}
               />
             );
           })}
