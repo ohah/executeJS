@@ -19,7 +19,6 @@ export const TabButton: React.FC<TabButtonProps> = ({
 
   return (
     <div className={`shrink-0 p-1 border-slate-800`}>
-      {/* TODO: 탭 최대 너비에 따른 제목 ellipsis 처리 @bori */}
       <div
         className={`group flex items-center rounded-sm hover:bg-[rgba(255,255,255,0.1)] ${isActive ? 'bg-[rgba(255,255,255,0.1)]' : 'bg-transparent'}`}
       >
@@ -31,7 +30,7 @@ export const TabButton: React.FC<TabButtonProps> = ({
             // TODO: 탭 우클릭 메뉴 로직 @bori
             console.log('우클릭 메뉴 -', id);
           }}
-          className={`group-hover:text-gray-50 px-2 cursor-pointer ${isActive ? 'text-gray-50' : 'text-gray-500'}`}
+          className={`group-hover:text-gray-50 w-40 px-2 truncate cursor-pointer ${isActive ? 'text-gray-50' : 'text-gray-500'}`}
         >
           {title}
         </button>
