@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { PLAYGROUND_STORAGE_KEY } from './const';
 
-interface Tab {
+export interface Tab {
   id: string;
   playgroundId: Playground['id'];
   title: string;
