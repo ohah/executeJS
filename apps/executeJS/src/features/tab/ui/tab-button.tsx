@@ -18,33 +18,33 @@ export const TabButton: React.FC<TabButtonProps> = ({
   const { id, title } = tab;
 
   return (
-    <div
-      className="shrink-0 flex items-center p-2 border-r border-slate-800"
-      // TODO: 활성화된 탭 스타일링 개선 @bori
-      style={{
-        backgroundColor: isActive ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-      }}
-    >
+    <div className={`shrink-0 p-1 border-slate-800`}>
       {/* TODO: 탭 최대 너비에 따른 제목 ellipsis 처리 @bori */}
-      <button
-        type="button"
-        onClick={() => onActiveTab(id)}
-        onContextMenu={(event) => {
-          event.preventDefault();
-          // TODO: 탭 우클릭 메뉴 로직 @bori
-          console.log('우클릭 메뉴 -', id);
-        }}
-        className="pr-2"
+      <div
+        className={`group flex items-center rounded-sm hover:bg-[rgba(255,255,255,0.1)] ${isActive ? 'bg-[rgba(255,255,255,0.1)]' : 'bg-transparent'}`}
       >
-        {title}
-      </button>
-      <button
-        type="button"
-        onClick={() => onCloseTab(id)}
-        className="p-1 rounded-sm hover:bg-[rgba(255,255,255,0.2)] transition-colors cursor-pointer"
-      >
-        <Cross2Icon />
-      </button>
+        <button
+          type="button"
+          onClick={() => onActiveTab(id)}
+          onContextMenu={(event) => {
+            event.preventDefault();
+            // TODO: 탭 우클릭 메뉴 로직 @bori
+            console.log('우클릭 메뉴 -', id);
+          }}
+          className={`group-hover:text-gray-50 px-2 cursor-pointer ${isActive ? 'text-gray-50' : 'text-gray-500'}`}
+        >
+          {title}
+        </button>
+        <button
+          type="button"
+          onClick={() => onCloseTab(id)}
+          className="h-full p-2 rounded-r-sm rounded-br-sm hover:bg-[rgba(255,255,255,0.1)] transition-colors cursor-pointer"
+        >
+          <Cross2Icon
+            className={`group-hover:text-gray-50 ${isActive ? 'text-gray-50' : 'text-gray-500'}`}
+          />
+        </button>
+      </div>
     </div>
   );
 };
