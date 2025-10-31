@@ -30,7 +30,7 @@ interface PlaygroundState {
   }) => void;
 }
 
-const INITIAL_TAB_TITLE = '✨New Playground';
+const INITIAL_TAB_TITLE = 'New Tab';
 const INITIAL_TAB_ID = 'first-playground-tab';
 const INITIAL_PLAYGROUND_ID = 'first-playground';
 

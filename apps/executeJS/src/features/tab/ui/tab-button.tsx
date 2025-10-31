@@ -30,7 +30,7 @@ export const TabButton: React.FC<TabButtonProps> = ({
             // TODO: 탭 우클릭 메뉴 로직 @bori
             console.log('우클릭 메뉴 -', id);
           }}
-          className={`group-hover:text-gray-50 w-40 px-2 truncate cursor-pointer ${isActive ? 'text-gray-50' : 'text-gray-500'}`}
+          className={`group-hover:text-gray-50 w-40 pl-3 pr-2 truncate text-left cursor-pointer ${isActive ? 'text-gray-50' : 'text-gray-500'}`}
         >
           {title}
         </button>
