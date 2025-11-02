@@ -147,3 +147,24 @@ if (typeof globalThis.module === 'undefined') {
 if (typeof globalThis.exports === 'undefined') {
   globalThis.exports = globalThis.module.exports;
 }
+
+// Node.js process 객체 정의 (npm 모듈 호환성)
+if (typeof globalThis.process === 'undefined') {
+  globalThis.process = {
+    env: {
+      NODE_ENV: 'development',
+    },
+    version: 'v20.0.0',
+    versions: {
+      node: '20.0.0',
+      v8: '10.2.0',
+    },
+    platform: 'darwin',
+    arch: 'x64',
+    cwd: () => '/',
+    nextTick: (callback) => {
+      // setTimeout으로 시뮬레이션
+      setTimeout(callback, 0);
+    },
+  };
+}
