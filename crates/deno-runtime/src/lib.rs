@@ -243,18 +243,28 @@ impl ModuleLoader for NpmModuleLoader {
                 );
 
                 // 진입점 찾기
+                eprintln!("[NpmModuleLoader::load] 진입점 찾기 시작...");
                 let entry_point = resolver.find_entry_point(&package_dir).map_err(|e| {
+                    eprintln!("[NpmModuleLoader::load] 진입점 찾기 실패: {}", e);
                     let msg = format!("진입점 찾기 실패: {}", e);
                     type_error(msg)
                 })?;
+                eprintln!("[NpmModuleLoader::load] 진입점: {:?}", entry_point);
 
                 // 파일 읽기
+                eprintln!("[NpmModuleLoader::load] 파일 읽기 시작...");
                 let code = fs::read_to_string(&entry_point).map_err(|e| {
+                    eprintln!("[NpmModuleLoader::load] 파일 읽기 실패: {}", e);
                     let msg = format!("파일 읽기 실패: {}", e);
                     type_error(msg)
                 })?;
+                eprintln!(
+                    "[NpmModuleLoader::load] 파일 읽기 완료, 코드 길이: {} bytes",
+                    code.len()
+                );
 
                 // ModuleSource 생성
+                eprintln!("[NpmModuleLoader::load] ModuleSource 생성 중...");
                 let module_code = ModuleSourceCode::String(FastString::from(code));
                 let module_source = ModuleSource::new(
                     ModuleType::JavaScript,
@@ -262,6 +272,7 @@ impl ModuleLoader for NpmModuleLoader {
                     &specifier,
                     None, // code_cache
                 );
+                eprintln!("[NpmModuleLoader::load] ModuleSource 생성 완료");
 
                 Ok(module_source)
             };

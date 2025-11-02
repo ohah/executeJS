@@ -207,11 +207,17 @@ impl NpmResolver {
     /// 패키지의 진입점 파일 찾기 (package.json의 main 필드)
     pub fn find_entry_point(&self, package_dir: &Path) -> Result<PathBuf> {
         let package_json_path = package_dir.join("package").join("package.json");
+        eprintln!(
+            "[NpmResolver::find_entry_point] package.json 경로: {:?}",
+            package_json_path
+        );
 
         let package_json_content =
             fs::read_to_string(&package_json_path).context("package.json을 읽을 수 없습니다")?;
+        eprintln!("[NpmResolver::find_entry_point] package.json 읽기 완료");
 
         let package_json: serde_json::Value = serde_json::from_str(&package_json_content)?;
+        eprintln!("[NpmResolver::find_entry_point] package.json 파싱 완료");
 
         // main, module, exports 우선순위로 찾기
         let entry_point = package_json["main"]
@@ -232,6 +238,18 @@ impl NpmResolver {
             })
             .unwrap_or("index.js"); // 기본값
 
-        Ok(package_dir.join("package").join(entry_point))
+        eprintln!(
+            "[NpmResolver::find_entry_point] 진입점 이름: {}",
+            entry_point
+        );
+
+        let full_path = package_dir.join("package").join(entry_point);
+        eprintln!("[NpmResolver::find_entry_point] 전체 경로: {:?}", full_path);
+        eprintln!(
+            "[NpmResolver::find_entry_point] 파일 존재 여부: {}",
+            full_path.exists()
+        );
+
+        Ok(full_path)
     }
 }
