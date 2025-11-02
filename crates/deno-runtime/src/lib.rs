@@ -8,8 +8,9 @@ use deno_core::{
     ResolutionKind, RuntimeOptions,
 };
 use futures::FutureExt;
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 use std::fs;
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -114,6 +115,8 @@ extension!(
 pub struct NpmModuleLoader {
     fs_loader: FsModuleLoader,
     npm_resolver: Arc<Mutex<NpmResolver>>,
+    /// npm: URL과 실제 파일 경로 매핑
+    npm_path_map: Arc<Mutex<HashMap<String, PathBuf>>>,
 }
 
 impl NpmModuleLoader {
@@ -121,6 +124,7 @@ impl NpmModuleLoader {
         Ok(Self {
             fs_loader: FsModuleLoader,
             npm_resolver: Arc::new(Mutex::new(NpmResolver::new()?)),
+            npm_path_map: Arc::new(Mutex::new(HashMap::new())),
         })
     }
 }
@@ -150,9 +154,57 @@ impl ModuleLoader for NpmModuleLoader {
                 type_error(msg).into()
             })
         } else {
-            eprintln!("[NpmModuleLoader::resolve] 일반 파일 시스템 모듈로 처리");
+            // npm 패키지 내부의 상대 경로 처리
+            // referrer가 npm: 프로토콜이면 실제 파일 경로로 변환
+            let actual_referrer = if referrer.starts_with("npm:") {
+                eprintln!(
+                    "[NpmModuleLoader::resolve] npm 패키지 내부 상대 경로 감지: {} (referrer: {})",
+                    specifier, referrer
+                );
+
+                // npm: URL과 실제 파일 경로 매핑에서 찾기
+                let path_map = self.npm_path_map.lock().unwrap();
+                if let Some(actual_path) = path_map.get(referrer) {
+                    // 실제 파일 경로를 file:// URL로 변환
+                    // ModuleSpecifier를 사용하여 올바른 URL 형식으로 변환
+                    let file_url = match ModuleSpecifier::from_file_path(actual_path) {
+                        Ok(url) => {
+                            eprintln!(
+                                "[NpmModuleLoader::resolve] 실제 경로로 변환: {} -> {}",
+                                referrer,
+                                url.as_str()
+                            );
+                            url.as_str().to_string()
+                        }
+                        Err(e) => {
+                            eprintln!(
+                                "[NpmModuleLoader::resolve] 파일 경로를 URL로 변환 실패: {:?}",
+                                e
+                            );
+                            // 폴백: file:// 절대 경로 형식 사용
+                            let path_str = actual_path.to_string_lossy();
+                            format!("file://{}", path_str)
+                        }
+                    };
+                    file_url
+                } else {
+                    eprintln!(
+                        "[NpmModuleLoader::resolve] 경로 매핑을 찾을 수 없음: {}",
+                        referrer
+                    );
+                    // 매핑이 없으면 원래 referrer 사용 (에러 발생 가능)
+                    referrer.to_string()
+                }
+            } else {
+                referrer.to_string()
+            };
+
+            eprintln!(
+                "[NpmModuleLoader::resolve] 일반 파일 시스템 모듈로 처리 (referrer: {})",
+                actual_referrer
+            );
             // 일반 파일 시스템 모듈
-            self.fs_loader.resolve(specifier, referrer, kind)
+            self.fs_loader.resolve(specifier, &actual_referrer, kind)
         }
     }
 
@@ -165,6 +217,7 @@ impl ModuleLoader for NpmModuleLoader {
     ) -> ModuleLoadResponse {
         let specifier_str = module_specifier.as_str();
         let npm_resolver = self.npm_resolver.clone();
+        let npm_path_map = self.npm_path_map.clone();
         let specifier = module_specifier.clone();
 
         eprintln!(
@@ -250,6 +303,17 @@ impl ModuleLoader for NpmModuleLoader {
                     type_error(msg)
                 })?;
                 eprintln!("[NpmModuleLoader::load] 진입점: {:?}", entry_point);
+
+                // npm: URL과 실제 파일 경로 매핑 저장
+                let specifier_str_for_map = specifier.as_str().to_string();
+                {
+                    let mut path_map = npm_path_map.lock().unwrap();
+                    path_map.insert(specifier_str_for_map.clone(), entry_point.clone());
+                    eprintln!(
+                        "[NpmModuleLoader::load] 경로 매핑 저장: {} -> {:?}",
+                        specifier_str_for_map, entry_point
+                    );
+                }
 
                 // 파일 읽기
                 eprintln!("[NpmModuleLoader::load] 파일 읽기 시작...");
