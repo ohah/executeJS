@@ -240,8 +240,9 @@ impl ModuleLoader for NpmModuleLoader {
                     // @scope/package@version 형식
                     let after_first_at = &package_spec[1..];
                     if let Some(second_at_pos) = after_first_at.rfind('@') {
-                        let scope_and_name = &package_spec[..=second_at_pos];
-                        let version = &package_spec[second_at_pos + 1..];
+                        // second_at_pos는 after_first_at 기준이므로 package_spec 기준으로는 +1 필요
+                        let scope_and_name = &package_spec[..=(second_at_pos + 1)];
+                        let version = &package_spec[second_at_pos + 2..];
                         (scope_and_name.to_string(), Some(version.to_string()))
                     } else {
                         // @scope/package (버전 없음)
