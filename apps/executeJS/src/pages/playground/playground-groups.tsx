@@ -1,23 +1,26 @@
 import { PlusIcon } from '@radix-ui/react-icons';
 
 import { TabButton } from '@/features/tab';
-import { usePlaygroundStore } from '@/features/playground';
+import { Tab, usePlaygroundStore } from '@/features/playground';
 import { PlaygroundWidget } from '@/widgets/playground';
 import { useState } from 'react';
+
+export interface TabContextMenu {
+  id: Tab['id'];
+  x: number;
+  y: number;
+}
 
 export const PlaygroundGroups: React.FC = () => {
   const { tabs, activeTabId, addTab, closeTab, setActiveTab, playgrounds } =
     usePlaygroundStore();
 
-  const [contextMenu, setContextMenu] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+  const [contextMenu, setContextMenu] = useState<TabContextMenu | null>(null);
 
-  const handleContextMenu = (event: React.MouseEvent) => {
+  const handleContextMenu = (event: React.MouseEvent, tabId: string) => {
     event.preventDefault();
 
-    setContextMenu({ x: event.clientX, y: event.clientY });
+    setContextMenu({ id: tabId, x: event.clientX, y: event.clientY });
   };
 
   const handleCloseContextMenu = () => setContextMenu(null);
