@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { Tab } from '@/features/playground';
 import { useClickOutside } from '@/shared';
 import { TabContextMenu } from '@/pages/playground';
-import { TabTitleModal } from './tab-title-mdal';
+import { TabTitleModal } from './tab-title-modal';
 import { FormProvider, useForm } from 'react-hook-form';
 
 interface TabButtonProps {
