@@ -18,7 +18,7 @@ export const TabButton: React.FC<TabButtonProps> = ({
   const { id, title } = tab;
 
   return (
-    <div className={`shrink-0 p-1 border-slate-800`}>
+    <div className={`shrink-0 p-1`}>
       <div
         className={`group flex items-center rounded-sm hover:bg-[rgba(255,255,255,0.1)] ${isActive ? 'bg-[rgba(255,255,255,0.1)]' : 'bg-transparent'}`}
       >
@@ -37,7 +37,7 @@ export const TabButton: React.FC<TabButtonProps> = ({
         <button
           type="button"
           onClick={() => onCloseTab(id)}
-          className="h-full p-2 rounded-r-sm rounded-br-sm hover:bg-[rgba(255,255,255,0.1)] transition-colors cursor-pointer"
+          className="h-full p-2 rounded-r-sm hover:bg-[rgba(255,255,255,0.1)] transition-colors cursor-pointer"
         >
           <Cross2Icon
             className={`group-hover:text-gray-50 ${isActive ? 'text-gray-50' : 'text-gray-500'}`}
