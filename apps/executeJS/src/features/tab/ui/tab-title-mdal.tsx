@@ -1,6 +1,6 @@
-import { Tab } from '@/features/playground';
+import { Tab, usePlaygroundStore } from '@/features/playground';
 import { Cross1Icon } from '@radix-ui/react-icons';
-import { Controller, useFormContext } from 'react-hook-form';
+import { Controller, SubmitHandler, useFormContext } from 'react-hook-form';
 
 interface TabTitleModalProps {
   open: boolean;
@@ -11,7 +11,17 @@ export const TabTitleModal: React.FC<TabTitleModalProps> = ({
   open,
   onClose,
 }) => {
+  const { setTabTitle } = usePlaygroundStore();
+
   const { control, handleSubmit } = useFormContext<Pick<Tab, 'id' | 'title'>>();
+
+  const handleChangeTabTitle: SubmitHandler<Pick<Tab, 'id' | 'title'>> = ({
+    id,
+    title,
+  }) => {
+    setTabTitle({ tabId: id, title: title.trim() });
+    onClose();
+  };
 
   if (!open) return null;
 
@@ -48,7 +58,7 @@ export const TabTitleModal: React.FC<TabTitleModalProps> = ({
 
         <button
           type="submit"
-          onClick={() => {}}
+          onClick={handleSubmit(handleChangeTabTitle)}
           className="p-1 rounded-md bg-gray-500"
         >
           Save

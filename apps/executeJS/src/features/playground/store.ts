@@ -24,6 +24,7 @@ interface PlaygroundState {
   addTab: () => void;
   closeTab: (tabId: Tab['id']) => void;
   setActiveTab: (tabId: Tab['id']) => void;
+  setTabTitle: (params: { tabId: Tab['id']; title: Tab['title'] }) => void;
   executeCode: (params: {
     playgroundId: Playground['id'];
     code: string;
@@ -84,7 +85,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
       },
 
       // 탭 닫기
-      closeTab: (tabId: Tab['id']) => {
+      closeTab: (tabId) => {
         set((state) => {
           const closingTab = state.tabs.find((tab) => tab.id === tabId);
           const tabsLength = state.tabs.length;
@@ -109,7 +110,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
       },
 
       // 탭 활성화
-      setActiveTab: (tabId: Tab['id']) => {
+      setActiveTab: (tabId) => {
         set((state) => {
           const lastTabId = state.tabHistory[state.tabHistory.length - 1];
 
@@ -124,14 +125,23 @@ export const usePlaygroundStore = create<PlaygroundState>()(
         });
       },
 
+      // 탭 제목 변경
+      setTabTitle: ({ tabId, title }) => {
+        set((state) => {
+          const tabs = state.tabs.map((tab) => {
+            if (tab.id === tabId) {
+              return { ...tab, title };
+            }
+
+            return tab;
+          });
+
+          return { tabs };
+        });
+      },
+
       // 플레이그라운드 별 코드 실행
-      executeCode: async ({
-        playgroundId,
-        code,
-      }: {
-        playgroundId: Playground['id'];
-        code: string;
-      }) => {
+      executeCode: async ({ playgroundId, code }) => {
         set((state) => {
           const playgrounds = new Map(state.playgrounds);
           const playground = playgrounds.get(playgroundId);
