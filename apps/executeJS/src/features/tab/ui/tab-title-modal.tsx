@@ -13,13 +13,19 @@ export const TabTitleModal: React.FC<TabTitleModalProps> = ({
 }) => {
   const { setTabTitle } = usePlaygroundStore();
 
-  const { control, handleSubmit } = useFormContext<Pick<Tab, 'id' | 'title'>>();
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+  } = useFormContext<Pick<Tab, 'id' | 'title'>>();
 
   const handleChangeTabTitle: SubmitHandler<Pick<Tab, 'id' | 'title'>> = ({
     id,
     title,
   }) => {
-    setTabTitle({ tabId: id, title: title.trim() });
+    const trimmedTitle = title.trim();
+
+    setTabTitle({ tabId: id, title: trimmedTitle });
     onClose();
   };
 
@@ -43,6 +49,10 @@ export const TabTitleModal: React.FC<TabTitleModalProps> = ({
         <Controller
           control={control}
           name="title"
+          rules={{
+            required: true,
+            validate: (value) => value.trim().length > 0,
+          }}
           render={({ field: { value, onChange } }) => {
             return (
               <input
@@ -58,8 +68,9 @@ export const TabTitleModal: React.FC<TabTitleModalProps> = ({
 
         <button
           type="submit"
+          disabled={!isValid}
           onClick={handleSubmit(handleChangeTabTitle)}
-          className="p-1 rounded-md bg-gray-500 cursor-pointer"
+          className="p-1 rounded-md bg-blue-600 cursor-pointer hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed"
         >
           Save
         </button>
