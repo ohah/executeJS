@@ -252,4 +252,67 @@ impl NpmResolver {
 
         Ok(full_path)
     }
+
+    /// 패키지의 타입 정의 파일 찾기 (package.json의 types 또는 typings 필드)
+    pub fn find_type_definitions(&self, package_dir: &Path) -> Result<Option<PathBuf>> {
+        let package_json_path = package_dir.join("package").join("package.json");
+        eprintln!(
+            "[NpmResolver::find_type_definitions] package.json 경로: {:?}",
+            package_json_path
+        );
+
+        if !package_json_path.exists() {
+            eprintln!("[NpmResolver::find_type_definitions] package.json 없음");
+            return Ok(None);
+        }
+
+        let package_json_content =
+            fs::read_to_string(&package_json_path).context("package.json을 읽을 수 없습니다")?;
+        let package_json: serde_json::Value = serde_json::from_str(&package_json_content)?;
+
+        // types 또는 typings 필드 확인
+        let type_def = package_json["types"]
+            .as_str()
+            .or_else(|| package_json["typings"].as_str());
+
+        if let Some(type_def_path) = type_def {
+            eprintln!(
+                "[NpmResolver::find_type_definitions] 타입 정의 경로 발견: {}",
+                type_def_path
+            );
+            let full_path = package_dir.join("package").join(type_def_path);
+            eprintln!(
+                "[NpmResolver::find_type_definitions] 전체 경로: {:?}",
+                full_path
+            );
+            eprintln!(
+                "[NpmResolver::find_type_definitions] 파일 존재 여부: {}",
+                full_path.exists()
+            );
+
+            if full_path.exists() {
+                Ok(Some(full_path))
+            } else {
+                eprintln!("[NpmResolver::find_type_definitions] 타입 정의 파일이 존재하지 않음");
+                Ok(None)
+            }
+        } else {
+            eprintln!("[NpmResolver::find_type_definitions] types/typings 필드 없음");
+            // @types/ 패키지 자동 검색 (예: lodash -> @types/lodash)
+            let package_name = package_json["name"].as_str().unwrap_or("");
+
+            // 스코프가 없는 패키지만 @types 검색
+            if !package_name.starts_with('@') && !package_name.is_empty() {
+                let types_package = format!("@types/{}", package_name);
+                eprintln!(
+                    "[NpmResolver::find_type_definitions] @types 패키지 검색 시도: {}",
+                    types_package
+                );
+                // @types 패키지는 별도로 설치해야 하므로 여기서는 로그만 남김
+                // 실제로는 npm: 프로토콜을 통해 로드 가능
+            }
+
+            Ok(None)
+        }
+    }
 }

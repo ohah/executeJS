@@ -304,6 +304,18 @@ impl ModuleLoader for NpmModuleLoader {
                 })?;
                 eprintln!("[NpmModuleLoader::load] 진입점: {:?}", entry_point);
 
+                // 타입 정의 파일 찾기
+                eprintln!("[NpmModuleLoader::load] 타입 정의 파일 찾기 시작...");
+                let type_def = resolver.find_type_definitions(&package_dir).unwrap_or(None);
+                if let Some(type_def_path) = &type_def {
+                    eprintln!(
+                        "[NpmModuleLoader::load] 타입 정의 파일 발견: {:?}",
+                        type_def_path
+                    );
+                } else {
+                    eprintln!("[NpmModuleLoader::load] 타입 정의 파일 없음");
+                }
+
                 // npm: URL과 실제 파일 경로 매핑 저장
                 let specifier_str_for_map = specifier.as_str().to_string();
                 {
@@ -327,11 +339,38 @@ impl ModuleLoader for NpmModuleLoader {
                     code.len()
                 );
 
+                // 파일 확장자에 따라 ModuleType 결정
+                // Deno Core는 TypeScript를 자동으로 처리하므로 JavaScript로 설정
+                // 실제 TypeScript 파일은 런타임에서 자동 변환됨
+                let file_ext = entry_point
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .unwrap_or("");
+
+                let module_type = match file_ext {
+                    "ts" | "tsx" | "mts" | "cts" => {
+                        eprintln!(
+                            "[NpmModuleLoader::load] TypeScript 모듈로 감지 (확장자: {})",
+                            file_ext
+                        );
+                        // Deno Core는 TypeScript도 JavaScript로 처리 가능
+                        ModuleType::JavaScript
+                    }
+                    "jsx" => {
+                        eprintln!("[NpmModuleLoader::load] JSX 모듈로 감지");
+                        ModuleType::JavaScript
+                    }
+                    _ => {
+                        eprintln!("[NpmModuleLoader::load] JavaScript 모듈로 감지");
+                        ModuleType::JavaScript
+                    }
+                };
+
                 // ModuleSource 생성
                 eprintln!("[NpmModuleLoader::load] ModuleSource 생성 중...");
                 let module_code = ModuleSourceCode::String(FastString::from(code));
                 let module_source = ModuleSource::new(
-                    ModuleType::JavaScript,
+                    module_type,
                     module_code,
                     &specifier,
                     None, // code_cache
