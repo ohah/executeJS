@@ -204,7 +204,7 @@ impl NpmResolver {
         Ok(())
     }
 
-    /// 패키지의 진입점 파일 찾기 (package.json의 main 필드)
+    /// 패키지의 진입점 파일 찾기 (ESM 우선: exports.import > module > main)
     pub fn find_entry_point(&self, package_dir: &Path) -> Result<PathBuf> {
         let package_json_path = package_dir.join("package").join("package.json");
         eprintln!(
@@ -219,23 +219,47 @@ impl NpmResolver {
         let package_json: serde_json::Value = serde_json::from_str(&package_json_content)?;
         eprintln!("[NpmResolver::find_entry_point] package.json 파싱 완료");
 
-        // main, module, exports 우선순위로 찾기
-        let entry_point = package_json["main"]
-            .as_str()
-            .or_else(|| package_json["module"].as_str())
+        // ESM 우선순위로 찾기: exports.import > module > exports.default > main
+        let entry_point = package_json["exports"]
+            .as_object()
+            .and_then(|e| e.get("."))
+            .and_then(|e| {
+                e.as_object().and_then(|e| {
+                    // exports["."].import.default 우선 확인 (ESM)
+                    e.get("import").and_then(|i| {
+                        i.as_object()
+                            .and_then(|i| i.get("default"))
+                            .and_then(|d| d.as_str())
+                            .or_else(|| {
+                                // exports["."].import가 직접 문자열인 경우
+                                i.as_str()
+                            })
+                    })
+                })
+            })
+            .or_else(|| package_json["module"].as_str()) // module 필드 (ESM)
             .or_else(|| {
-                // exports 필드에서 "." 경로 찾기
+                // exports["."]가 직접 문자열인 경우
+                package_json["exports"]
+                    .as_object()
+                    .and_then(|e| e.get("."))
+                    .and_then(|e| e.as_str())
+            })
+            .or_else(|| {
+                // exports["."].require (CommonJS, 폴백)
                 package_json["exports"]
                     .as_object()
                     .and_then(|e| e.get("."))
                     .and_then(|e| {
-                        e.as_str().or_else(|| {
-                            e.as_object()
-                                .and_then(|e| e.get("import").or_else(|| e.get("require")))
-                                .and_then(|e| e.as_str())
+                        e.as_object().and_then(|e| e.get("require")).and_then(|r| {
+                            r.as_object()
+                                .and_then(|r| r.get("default"))
+                                .and_then(|d| d.as_str())
+                                .or_else(|| r.as_str())
                         })
                     })
             })
+            .or_else(|| package_json["main"].as_str()) // main (CommonJS, 최종 폴백)
             .unwrap_or("index.js"); // 기본값
 
         eprintln!(
