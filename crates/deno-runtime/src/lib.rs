@@ -471,7 +471,7 @@ impl DenoExecutor {
                 // ES 모듈로 실행
                 eprintln!("[DenoExecutor] ES 모듈로 실행 시도...");
                 let specifier = ModuleSpecifier::parse("file:///executejs/user_code.mjs")
-                    .map_err(|e| anyhow::anyhow!("스펙 해석 실패: {}", e))?;
+                    .map_err(|e| anyhow::anyhow!("{}", e))?;
 
                 eprintln!(
                     "[DenoExecutor] load_main_es_module_from_code 호출: {}",
@@ -483,14 +483,14 @@ impl DenoExecutor {
                             .load_main_es_module_from_code(&specifier, code.clone())
                             .await
                     })
-                    .map_err(|e| anyhow::anyhow!("모듈 로드 실패: {}", e))?;
+                    .map_err(|e| anyhow::anyhow!("{}", e))?;
 
                 eprintln!("[DenoExecutor] 모듈 로드 완료, ModuleId: {}", module_id);
 
                 // 모듈 평가 (비동기)
                 eprintln!("[DenoExecutor] mod_evaluate 호출...");
                 rt.block_on(async { js_runtime.mod_evaluate(module_id).await })
-                    .map_err(|e| anyhow::anyhow!("모듈 평가 실패: {}", e))?;
+                    .map_err(|e| anyhow::anyhow!("{}", e))?;
 
                 eprintln!("[DenoExecutor] mod_evaluate 완료");
             } else {
