@@ -1,0 +1,103 @@
+# npm 모듈 사용하기
+
+ExecuteJS는 npm 레지스트리에서 패키지를 직접 다운로드하고 사용할 수 있습니다.
+
+## 설치
+
+ExecuteJS를 아직 설치하지 않으셨다면, [GitHub 릴리즈](https://github.com/ohah/executeJS/releases)에서 최신 버전을 다운로드하여 설치하세요.
+
+## 기본 사용법
+
+### npm 패키지 import
+
+`npm:` 프로토콜을 사용하여 npm 패키지를 import할 수 있습니다.
+
+```javascript
+import _ from 'npm:lodash';
+
+console.log(_.map([1, 2, 3], (x) => x * 2));
+// 출력: [2, 4, 6]
+```
+
+### 버전 지정
+
+특정 버전을 지정할 수도 있습니다.
+
+```javascript
+import lodash from 'npm:lodash@4.17.21';
+```
+
+### 스코프 패키지
+
+`@scope/package` 형식의 스코프 패키지도 지원합니다.
+
+```javascript
+import { something } from 'npm:@some-scope/package';
+```
+
+## CommonJS, UMD 모듈 지원(지원 예정)
+
+ExecuteJS는 CommonJS, UMD 형식의 패키지를 자동으로 ES 모듈로 변환합니다.
+
+### 기본 import
+
+## 작동 방식
+
+1. **패키지 다운로드**: npm 레지스트리 API를 통해 패키지를 다운로드합니다.
+2. **로컬 캐시**: 다운로드한 패키지는 로컬 캐시에 저장되어 재사용됩니다.
+3. **CommonJS 변환**: CommonJS 형식의 패키지는 자동으로 ES 모듈로 변환됩니다.
+4. **모듈 로딩**: Deno Core를 통해 모듈을 로드하고 실행합니다.
+
+## 캐시 위치
+
+다운로드한 패키지는 다음 위치에 캐시됩니다:
+
+- **macOS**: `~/Library/Caches/executejs/npm/`
+- **Windows**: `%LOCALAPPDATA%/executejs/npm/`
+
+## 제한사항
+
+### 지원되는 패키지 형식
+
+현재는 **ESM 형식의 패키지**만 지원합니다. CommonJS, UMD 전용 패키지는 제한적으로 지원될 수 있습니다.
+
+## 예제
+
+### Lodash 사용하기
+
+```javascript
+import _ from 'npm:lodash';
+
+const data = [1, 2, 3, 4, 5];
+const result = _.map(data, (x) => x * 2);
+console.log('Doubled:', result);
+// 출력: Doubled: [2, 4, 6, 8, 10]
+```
+
+### 날짜 처리 (date-fns)
+
+```javascript
+import { format, addDays } from 'npm:date-fns';
+
+const now = new Date();
+console.log(format(now, 'yyyy-MM-dd HH:mm:ss'));
+
+// 날짜 계산
+const tomorrow = addDays(now, 1);
+console.log(format(tomorrow, 'yyyy-MM-dd'));
+```
+
+## 문제 해결
+
+### 패키지 로드 실패
+
+패키지가 로드되지 않는 경우:
+
+1. **인터넷 연결 확인**: npm 레지스트리에 접근 가능한지 확인
+2. **패키지 이름 확인**: 패키지 이름이 정확한지 확인
+3. **버전 확인**: 지정한 버전이 존재하는지 확인
+
+## 다음 단계
+
+- [시작하기](/guide/getting-started)에서 기본 사용법을 확인하세요
+- [개발하기](/dev/development)에서 프로젝트 개발 방법을 알아보세요
