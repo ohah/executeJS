@@ -172,12 +172,41 @@ src/
 
 - **프레임워크**: Tauri 2.0
 - **JavaScript 엔진**: Deno Core 0.323 (V8 기반)
+- **npm 모듈 지원**: npm 레지스트리에서 패키지를 직접 다운로드 및 사용
+- **CommonJS 변환**: CommonJS 패키지를 ES 모듈로 자동 변환(지원 예정)
+- **UMD 변환**: CommonJS 패키지를 ES 모듈로 자동 변환(지원 예정)
 - **테스팅**: cargo test
 - **린팅**: rustfmt
 - **로깅**: tracing
+
+#### npm 모듈 로딩 아키텍처
+
+ExecuteJS는 커스텀 `ModuleLoader`를 구현하여 npm 패키지를 지원합니다:
+
+1. **NpmModuleLoader**: `npm:` 프로토콜을 처리하는 모듈 로더
+2. **NpmResolver**: npm 레지스트리에서 패키지를 다운로드하고 캐시
+3. **CommonJS 변환**: `swc`를 통해 CommonJS를 ES 모듈로 변환(지원 예정)
+4. **UMD 변환**: `swc`를 통해 UMD ES 모듈로 변환(지원 예정)
+
+```
+crates/deno-runtime/src/
+├── lib.rs              # NpmModuleLoader 구현
+└── npm_resolver.rs     # npm 패키지 다운로드 및 캐시 관리
+```
+
+**주요 기능**:
+
+- npm 레지스트리 API를 통한 패키지 다운로드
+- 로컬 캐시를 통한 빠른 재사용
+- CommonJS, UMD → ES Module 자동 변환 (지원 예정)
+- 패키지 내부 상대 경로 import 지원
 
 ### 모노레포 구조
 
 - **pnpm 워크스페이스**: Node.js 패키지 관리
 - **Cargo 워크스페이스**: Rust 크레이트 관리
 - **조건부 CI**: 폴더별 변경사항에 따른 워크플로우 실행
+
+## 다음 단계
+
+- [API 참조](/dev/api/commands)에서 사용 가능한 모든 Tauri 명령어를 확인하세요.

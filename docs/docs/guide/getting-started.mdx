@@ -58,7 +58,18 @@ executeJS/
 └── ...
 ```
 
+## npm 모듈 사용하기
+
+ExecuteJS는 npm 레지스트리에서 패키지를 직접 다운로드하고 사용할 수 있습니다.
+
+```javascript
+import _ from 'npm:lodash';
+console.log(_.map([1, 2, 3], (x) => x * 2));
+```
+
+자세한 내용은 [npm 모듈 사용하기](/guide/npm-modules) 가이드를 참조하세요.
+
 ## 다음 단계
 
-- [API 참조](/api/commands)에서 사용 가능한 모든 명령어를 확인하세요.
-- [개발 가이드](/guide/development)에서 프로젝트 개발 방법을 알아보세요.
+- [npm 모듈 사용하기](/guide/npm-modules)에서 npm 패키지 사용 방법을 알아보세요
+- [개발하기](/dev/development)에서 프로젝트 개발 방법을 알아보세요

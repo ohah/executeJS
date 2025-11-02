@@ -5,8 +5,8 @@
     "activeMatch": "/guide/"
   },
   {
-    "text": "API 참조",
-    "link": "/api/commands",
-    "activeMatch": "/api/"
+    "text": "개발하기",
+    "link": "/dev/development",
+    "activeMatch": "/dev/"
   }
 ]

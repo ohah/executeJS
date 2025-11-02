@@ -1,1 +1,5 @@
-["getting-started", "development", "live-demo"]
+[
+  "getting-started",
+  "npm-modules",
+  "live-demo"
+]
