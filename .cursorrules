@@ -19,7 +19,7 @@
 - **Backend**: Rust, Tauri 2.0
 - **JavaScript Engine**: Deno Core 0.323 (V8 기반)
 - **Package Manager**: pnpm
-- **Linting**: oxlint (JavaScript), clippy (Rust)
+- **Linting**: oxlint (JavaScript)
 - **Formatting**: Prettier (JavaScript), rustfmt (Rust)
 - **Documentation**: RSPress
 
@@ -155,7 +155,6 @@ chore: 빌드 설정 변경
 - [ ] Prettier 포맷팅 적용
 - [ ] TypeScript 타입 체크 통과
 - [ ] Vitest 테스트 통과
-- [ ] Rust clippy 통과
 - [ ] rustfmt 포맷팅 적용
 - [ ] cargo test 통과
 

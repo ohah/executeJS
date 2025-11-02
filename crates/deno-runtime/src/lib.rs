@@ -1,10 +1,21 @@
+use anyhow::Error as AnyhowError;
 use anyhow::Result;
+use deno_core::error::type_error;
 use deno_core::error::AnyError;
-use deno_core::{extension, op2, FsModuleLoader, JsRuntime, RuntimeOptions};
+use deno_core::{
+    extension, op2, FastString, FsModuleLoader, JsRuntime, ModuleLoadResponse, ModuleLoader,
+    ModuleSource, ModuleSourceCode, ModuleSpecifier, ModuleType, RequestedModuleType,
+    ResolutionKind, RuntimeOptions,
+};
+use futures::FutureExt;
 use std::collections::VecDeque;
+use std::fs;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::Mutex;
+
+mod npm_resolver;
+pub use npm_resolver::NpmResolver;
 
 /// JavaScript 실행 결과를 저장하는 구조체
 #[derive(Debug, Clone)]
@@ -99,6 +110,175 @@ extension!(
     ops = [op_console_log, op_alert, op_custom_print],
 );
 
+/// npm 패키지를 지원하는 모듈 로더
+pub struct NpmModuleLoader {
+    fs_loader: FsModuleLoader,
+    npm_resolver: Arc<Mutex<NpmResolver>>,
+}
+
+impl NpmModuleLoader {
+    pub fn new() -> Result<Self> {
+        Ok(Self {
+            fs_loader: FsModuleLoader,
+            npm_resolver: Arc::new(Mutex::new(NpmResolver::new()?)),
+        })
+    }
+}
+
+impl ModuleLoader for NpmModuleLoader {
+    fn resolve(
+        &self,
+        specifier: &str,
+        referrer: &str,
+        kind: ResolutionKind,
+    ) -> Result<ModuleSpecifier, AnyhowError> {
+        eprintln!(
+            "[NpmModuleLoader::resolve] specifier: {}, referrer: {}, kind: {:?}",
+            specifier, referrer, kind
+        );
+
+        // npm: 프로토콜 처리
+        if specifier.starts_with("npm:") {
+            eprintln!(
+                "[NpmModuleLoader::resolve] npm: 프로토콜 감지: {}",
+                specifier
+            );
+            // npm: 프로토콜을 그대로 유지하여 load에서 처리
+            ModuleSpecifier::parse(specifier).map_err(|e| {
+                eprintln!("[NpmModuleLoader::resolve] 모듈 스펙 해석 실패: {}", e);
+                let msg = format!("모듈 스펙 해석 실패: {}", e);
+                type_error(msg).into()
+            })
+        } else {
+            eprintln!("[NpmModuleLoader::resolve] 일반 파일 시스템 모듈로 처리");
+            // 일반 파일 시스템 모듈
+            self.fs_loader.resolve(specifier, referrer, kind)
+        }
+    }
+
+    fn load(
+        &self,
+        module_specifier: &ModuleSpecifier,
+        maybe_referrer: Option<&ModuleSpecifier>,
+        is_dyn_import: bool,
+        requested_module_type: RequestedModuleType,
+    ) -> ModuleLoadResponse {
+        let specifier_str = module_specifier.as_str();
+        let npm_resolver = self.npm_resolver.clone();
+        let specifier = module_specifier.clone();
+
+        eprintln!(
+            "[NpmModuleLoader::load] specifier: {}, is_dyn_import: {}",
+            specifier_str, is_dyn_import
+        );
+
+        // npm: 프로토콜 처리
+        if specifier_str.starts_with("npm:") {
+            eprintln!(
+                "[NpmModuleLoader::load] npm: 프로토콜 감지, 패키지 다운로드 시작: {}",
+                specifier_str
+            );
+            let package_spec = &specifier_str[4..];
+
+            // 패키지명과 버전 파싱
+            let (package_name, version) = if let Some(at_pos) = package_spec.rfind('@') {
+                // 스코프 패키지 처리 (@scope/package@version)
+                if package_spec.starts_with('@') {
+                    // @scope/package@version 형식
+                    let after_first_at = &package_spec[1..];
+                    if let Some(second_at_pos) = after_first_at.rfind('@') {
+                        let scope_and_name = &package_spec[..=second_at_pos];
+                        let version = &package_spec[second_at_pos + 1..];
+                        (scope_and_name.to_string(), Some(version.to_string()))
+                    } else {
+                        // @scope/package (버전 없음)
+                        (package_spec.to_string(), None)
+                    }
+                } else {
+                    // package@version
+                    let (name, version) = package_spec.split_at(at_pos);
+                    (name.to_string(), Some(version[1..].to_string()))
+                }
+            } else {
+                (package_spec.to_string(), None)
+            };
+
+            // 비동기 로드
+            // 필요한 데이터를 먼저 복사하고 락 해제
+            let cache_dir = npm_resolver.lock().unwrap().cache_dir().to_path_buf();
+            let registry_url = npm_resolver.lock().unwrap().registry_url().to_string();
+
+            let fut = async move {
+                eprintln!(
+                    "[NpmModuleLoader::load] 패키지명: {}, 버전: {:?}",
+                    package_name, version
+                );
+
+                // 패키지 다운로드 및 설치 (독립적인 리졸버 생성)
+                eprintln!("[NpmModuleLoader::load] NpmResolver 생성 중...");
+                let resolver =
+                    NpmResolver::with_cache_dir(cache_dir, registry_url).map_err(|e| {
+                        eprintln!("[NpmModuleLoader::load] 리졸버 생성 실패: {}", e);
+                        let msg = format!("리졸버 생성 실패: {}", e);
+                        type_error(msg)
+                    })?;
+                eprintln!("[NpmModuleLoader::load] 리졸버 생성 완료");
+
+                eprintln!(
+                    "[NpmModuleLoader::load] install_package 호출: {}@{:?}",
+                    package_name,
+                    version.as_deref()
+                );
+                let package_dir = resolver
+                    .install_package(&package_name, version.as_deref())
+                    .await
+                    .map_err(|e| {
+                        eprintln!("[NpmModuleLoader::load] npm 패키지 다운로드 실패: {}", e);
+                        let msg = format!("npm 패키지 다운로드 실패: {}", e);
+                        type_error(msg)
+                    })?;
+                eprintln!(
+                    "[NpmModuleLoader::load] 패키지 다운로드 완료: {:?}",
+                    package_dir
+                );
+
+                // 진입점 찾기
+                let entry_point = resolver.find_entry_point(&package_dir).map_err(|e| {
+                    let msg = format!("진입점 찾기 실패: {}", e);
+                    type_error(msg)
+                })?;
+
+                // 파일 읽기
+                let code = fs::read_to_string(&entry_point).map_err(|e| {
+                    let msg = format!("파일 읽기 실패: {}", e);
+                    type_error(msg)
+                })?;
+
+                // ModuleSource 생성
+                let module_code = ModuleSourceCode::String(FastString::from(code));
+                let module_source = ModuleSource::new(
+                    ModuleType::JavaScript,
+                    module_code,
+                    &specifier,
+                    None, // code_cache
+                );
+
+                Ok(module_source)
+            };
+
+            ModuleLoadResponse::Async(fut.boxed())
+        } else {
+            // 일반 파일 시스템 모듈
+            self.fs_loader.load(
+                module_specifier,
+                maybe_referrer,
+                is_dyn_import,
+                requested_module_type,
+            )
+        }
+    }
+}
+
 /// JavaScript 실행기 (Deno Core 기반)
 pub struct DenoExecutor {
     output_buffer: Arc<Mutex<ExecutionOutput>>,
@@ -133,9 +313,19 @@ impl DenoExecutor {
 
         // 별도 스레드에서 Deno Core 실행 (Send 트레이트 문제 해결)
         let result = tokio::task::spawn_blocking(move || {
+            // 커스텀 모듈 로더 생성 (npm 지원)
+            let module_loader = match NpmModuleLoader::new() {
+                Ok(loader) => Rc::new(loader) as Rc<dyn ModuleLoader>,
+                Err(e) => {
+                    // npm 리졸버 생성 실패 시 기본 로더 사용
+                    eprintln!("npm 모듈 로더 초기화 실패 (기본 로더 사용): {}", e);
+                    Rc::new(FsModuleLoader) as Rc<dyn ModuleLoader>
+                }
+            };
+
             // JsRuntime 생성
             let mut js_runtime = JsRuntime::new(RuntimeOptions {
-                module_loader: Some(Rc::new(FsModuleLoader)),
+                module_loader: Some(module_loader),
                 extensions: vec![executejs_runtime::init_ops()],
                 ..Default::default()
             });
@@ -147,14 +337,59 @@ impl DenoExecutor {
             }
 
             // 코드 실행
-            let result = js_runtime.execute_script("[executejs:user_code]", code)?;
+            eprintln!(
+                "[DenoExecutor] 코드 실행 시작, 코드 길이: {} bytes",
+                code.len()
+            );
+            eprintln!(
+                "[DenoExecutor] 코드 내용 (처음 200자): {}",
+                &code.chars().take(200).collect::<String>()
+            );
 
-            // 이벤트 루프 실행 (Promise 처리) - 블로킹 방식으로 변경
+            // ES 모듈 import 구문이 있는지 확인
+            let has_import = code.contains("import ") || code.contains("export ");
+            eprintln!("[DenoExecutor] ES 모듈 구문 감지: {}", has_import);
+
+            // 이벤트 루프 실행을 위한 런타임 핸들
             let rt = tokio::runtime::Handle::current();
-            rt.block_on(async { js_runtime.run_event_loop(Default::default()).await })?;
 
-            // 결과 처리
-            let _ = result;
+            if has_import {
+                // ES 모듈로 실행
+                eprintln!("[DenoExecutor] ES 모듈로 실행 시도...");
+                let specifier = ModuleSpecifier::parse("file:///executejs/user_code.mjs")
+                    .map_err(|e| anyhow::anyhow!("스펙 해석 실패: {}", e))?;
+
+                eprintln!(
+                    "[DenoExecutor] load_main_es_module_from_code 호출: {}",
+                    specifier
+                );
+                let module_id = rt
+                    .block_on(async {
+                        js_runtime
+                            .load_main_es_module_from_code(&specifier, code.clone())
+                            .await
+                    })
+                    .map_err(|e| anyhow::anyhow!("모듈 로드 실패: {}", e))?;
+
+                eprintln!("[DenoExecutor] 모듈 로드 완료, ModuleId: {}", module_id);
+
+                // 모듈 평가 (비동기)
+                eprintln!("[DenoExecutor] mod_evaluate 호출...");
+                rt.block_on(async { js_runtime.mod_evaluate(module_id).await })
+                    .map_err(|e| anyhow::anyhow!("모듈 평가 실패: {}", e))?;
+
+                eprintln!("[DenoExecutor] mod_evaluate 완료");
+            } else {
+                // 일반 스크립트로 실행
+                eprintln!("[DenoExecutor] 일반 스크립트로 실행...");
+                let _result = js_runtime.execute_script("[executejs:user_code]", code)?;
+                eprintln!("[DenoExecutor] execute_script 완료");
+            }
+
+            // 이벤트 루프 실행 (Promise 처리 및 모듈 로딩 완료 대기)
+            eprintln!("[DenoExecutor] 이벤트 루프 실행 시작...");
+            rt.block_on(async { js_runtime.run_event_loop(Default::default()).await })?;
+            eprintln!("[DenoExecutor] 이벤트 루프 완료");
 
             // 출력 버퍼에서 결과 가져오기
             let output = output_buffer.lock().unwrap();

@@ -16,5 +16,22 @@ tracing.workspace = true
 # Deno Core dependencies
 deno_core = "0.323"
 
+# HTTP 클라이언트 (npm 레지스트리 API)
+reqwest = { version = "0.12", features = ["rustls-tls", "json"] }
+
+# Tarball 압축 해제
+tar = "0.4"
+flate2 = "1.0"
+
+# JSON 파싱 (npm 레지스트리 응답)
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# 파일 경로 처리
+dirs = "5.0"
+
+# Future 유틸리티
+futures = "0.3"
+
 [dev-dependencies]
 tokio.workspace = true
