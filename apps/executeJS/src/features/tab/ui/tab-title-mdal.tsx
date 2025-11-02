@@ -59,7 +59,7 @@ export const TabTitleModal: React.FC<TabTitleModalProps> = ({
         <button
           type="submit"
           onClick={handleSubmit(handleChangeTabTitle)}
-          className="p-1 rounded-md bg-gray-500"
+          className="p-1 rounded-md bg-gray-500 cursor-pointer"
         >
           Save
         </button>
