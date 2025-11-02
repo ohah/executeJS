@@ -1,11 +1,12 @@
-import { Cross2Icon } from '@radix-ui/react-icons';
 import { useRef, useState } from 'react';
+
+import { Cross2Icon } from '@radix-ui/react-icons';
 
 import { Tab } from '@/features/playground';
 import { useClickOutside } from '@/shared';
 import { TabContextMenu } from '@/pages/playground';
+
 import { TabTitleModal } from './tab-title-modal';
-import { FormProvider, useForm } from 'react-hook-form';
 
 interface TabButtonProps {
   tab: Tab;
@@ -34,13 +35,6 @@ export const TabButton: React.FC<TabButtonProps> = ({
     useState<boolean>(false);
 
   useClickOutside(ref, onCloseContextMenu);
-
-  const method = useForm<Pick<Tab, 'id' | 'title'>>({
-    defaultValues: {
-      id: id,
-      title: title,
-    },
-  });
 
   const handleOpenChangeTabTitleModal = () => {
     onCloseContextMenu();
@@ -101,12 +95,12 @@ export const TabButton: React.FC<TabButtonProps> = ({
         )}
       </div>
 
-      <FormProvider {...method}>
+      {openChangeTabTitleModal && (
         <TabTitleModal
-          open={openChangeTabTitleModal}
+          tab={tab}
           onClose={() => setOpenChangeTabTitleModal(false)}
         />
-      </FormProvider>
+      )}
     </>
   );
 };
