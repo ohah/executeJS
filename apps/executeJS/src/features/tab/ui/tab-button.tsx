@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { Tab } from '@/features/playground';
 import { useClickOutside } from '@/shared';
 import { TabContextMenu } from '@/pages/playground';
-import { TabTitleModal } from './tab-title-mdal';
+import { TabTitleModal } from './tab-title-modal';
 import { FormProvider, useForm } from 'react-hook-form';
 
 interface TabButtonProps {
@@ -58,13 +58,16 @@ export const TabButton: React.FC<TabButtonProps> = ({
             onClick={() => onActiveTab(id)}
             onContextMenu={(event) => onContextMenu(event, id)}
             className={`group-hover:text-gray-50 w-40 pl-3 pr-2 truncate text-left cursor-pointer select-none ${isActive ? 'text-gray-50' : 'text-gray-500'}`}
+            aria-label={`Tab: ${title}`}
           >
             {title}
           </button>
           <button
             type="button"
             onClick={() => onCloseTab(id)}
+            onContextMenu={(e) => e.stopPropagation()}
             className="h-full p-2 rounded-r-sm hover:bg-[rgba(255,255,255,0.1)] transition-colors cursor-pointer"
+            aria-label={`Close tab: ${title}`}
           >
             <Cross2Icon
               className={`group-hover:text-gray-50 ${isActive ? 'text-gray-50' : 'text-gray-500'}`}
@@ -76,6 +79,8 @@ export const TabButton: React.FC<TabButtonProps> = ({
             ref={ref}
             style={{ left: contextMenu.x, top: contextMenu.y }}
             className="absolute w-50 p-2 border border-slate-700 rounded-md bg-slate-900"
+            role="menu"
+            aria-label="Tab context menu"
           >
             <ul>
               <li>
