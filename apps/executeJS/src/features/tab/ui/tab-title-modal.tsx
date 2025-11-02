@@ -56,29 +56,32 @@ export const TabTitleModal: React.FC<TabTitleModalProps> = ({
           </button>
         </div>
 
-        <Controller
-          control={control}
-          name="title"
-          render={({ field: { value, onChange } }) => {
-            return (
-              <input
-                type="text"
-                autoFocus
-                value={value}
-                onChange={onChange}
-                className="py-1 px-2 mt-4 mb-3 rounded-md bg-gray-900"
-              />
-            );
-          }}
-        />
+        <form onSubmit={handleSubmit(handleChangeTabTitle)}>
+          <Controller
+            control={control}
+            name="title"
+            render={({ field: { value, onChange } }) => {
+              return (
+                <input
+                  type="text"
+                  autoFocus
+                  value={value}
+                  onChange={onChange}
+                  className="py-1 px-2 mt-4 mb-3 rounded-md bg-gray-900"
+                  aria-label="Tab title"
+                  required
+                />
+              );
+            }}
+          />
 
-        <button
-          type="submit"
-          onClick={handleSubmit(handleChangeTabTitle)}
-          className="p-1 rounded-md bg-gray-500 cursor-pointer"
-        >
-          Save
-        </button>
+          <button
+            type="submit"
+            className="p-1 rounded-md bg-gray-500 cursor-pointer"
+          >
+            Save
+          </button>
+        </form>
       </div>
     </div>
   );
