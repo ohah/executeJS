@@ -1,11 +1,22 @@
 import React, { useRef } from 'react';
 
 import { Editor, EditorProps } from '@monaco-editor/react';
+import type { Options as PrettierOptions } from 'prettier';
 import prettier from 'prettier/standalone';
 import babel from 'prettier/plugins/babel';
 import estree from 'prettier/plugins/estree';
+import typescript from 'prettier/plugins/typescript';
 
 import type { CodeEditorProps } from '../../shared/types';
+
+const prettierOptions: PrettierOptions = {
+  semi: true,
+  trailingComma: 'es5',
+  singleQuote: true,
+  printWidth: 80,
+  tabWidth: 2,
+  useTabs: false,
+};
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
   value,
@@ -21,21 +32,41 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     try {
       editorRef.current = editor;
 
-      // Prettier 포맷터 등록
-      monaco.languages.registerDocumentFormattingEditProvider(language, {
+      // JavaScript 포맷터 등록
+      monaco.languages.registerDocumentFormattingEditProvider('javascript', {
         async provideDocumentFormattingEdits(model) {
           const text = model.getValue();
 
           try {
             const formatted = await prettier.format(text, {
+              ...prettierOptions,
               parser: 'babel',
               plugins: [babel, estree],
-              semi: true,
-              trailingComma: 'es5',
-              singleQuote: true,
-              printWidth: 80,
-              tabWidth: 2,
-              useTabs: false,
+            });
+
+            return [
+              {
+                range: model.getFullModelRange(),
+                text: formatted,
+              },
+            ];
+          } catch (error) {
+            console.error('Prettier formatting error:', error);
+            return [];
+          }
+        },
+      });
+
+      // TypeScript 포맷터 등록
+      monaco.languages.registerDocumentFormattingEditProvider('typescript', {
+        async provideDocumentFormattingEdits(model) {
+          const text = model.getValue();
+
+          try {
+            const formatted = await prettier.format(text, {
+              ...prettierOptions,
+              parser: 'typescript',
+              plugins: [typescript, estree],
             });
 
             return [
