@@ -1,5 +1,10 @@
 import React, { useRef } from 'react';
+
 import { Editor, EditorProps } from '@monaco-editor/react';
+import prettier from 'prettier/standalone';
+import babel from 'prettier/plugins/babel';
+import estree from 'prettier/plugins/estree';
+
 import type { CodeEditorProps } from '../../shared/types';
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -16,12 +21,51 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     try {
       editorRef.current = editor;
 
-      // Cmd+Enter 키바인딩 추가
+      // Prettier 포맷터 등록
+      monaco.languages.registerDocumentFormattingEditProvider(language, {
+        async provideDocumentFormattingEdits(model) {
+          const text = model.getValue();
+
+          try {
+            const formatted = await prettier.format(text, {
+              parser: 'babel',
+              plugins: [babel, estree],
+              semi: true,
+              trailingComma: 'es5',
+              singleQuote: true,
+              printWidth: 80,
+              tabWidth: 2,
+              useTabs: false,
+            });
+
+            return [
+              {
+                range: model.getFullModelRange(),
+                text: formatted,
+              },
+            ];
+          } catch (error) {
+            console.error('Prettier formatting error:', error);
+            return [];
+          }
+        },
+      });
+
+      // 단축키 바인딩
       if (monaco && monaco.KeyMod && monaco.KeyCode) {
+        // Cmd+Enter 코드 실행
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
           const currentValue = editor.getValue();
           onExecute?.(currentValue);
         });
+
+        // Cmd+Shift+F prettier 포맷 실행
+        editor.addCommand(
+          monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyF,
+          () => {
+            editor.getAction('editor.action.formatDocument')?.run();
+          }
+        );
       }
 
       // 에디터 포커스
