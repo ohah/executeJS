@@ -33,6 +33,14 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     try {
       editorRef.current = editor;
 
+      // 이전 등록된 포맷터가 남아있는 경우, 먼저 해제
+      if (disposablesRef.current.length > 0) {
+        disposablesRef.current.forEach((disposable) => {
+          disposable.dispose();
+        });
+        disposablesRef.current = [];
+      }
+
       // JavaScript 포맷터 등록
       const jsDisposable =
         monaco.languages.registerDocumentFormattingEditProvider('javascript', {
@@ -161,7 +169,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       disposablesRef.current.forEach((disposable) => {
         disposable.dispose();
       });
-
       disposablesRef.current = [];
     };
   }, []);
