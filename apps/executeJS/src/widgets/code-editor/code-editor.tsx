@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { Editor, EditorProps } from '@monaco-editor/react';
 import type { Options as PrettierOptions } from 'prettier';
@@ -26,6 +26,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   theme = 'vs-dark',
 }) => {
   const editorRef = useRef<any>(null);
+  const disposablesRef = useRef<Array<{ dispose(): void }>>([]);
 
   // Monaco Editor 설정
   const handleEditorDidMount: EditorProps['onMount'] = (editor, monaco) => {
@@ -33,54 +34,59 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       editorRef.current = editor;
 
       // JavaScript 포맷터 등록
-      monaco.languages.registerDocumentFormattingEditProvider('javascript', {
-        async provideDocumentFormattingEdits(model) {
-          const text = model.getValue();
+      const jsDisposable =
+        monaco.languages.registerDocumentFormattingEditProvider('javascript', {
+          async provideDocumentFormattingEdits(model) {
+            const text = model.getValue();
 
-          try {
-            const formatted = await prettier.format(text, {
-              ...prettierOptions,
-              parser: 'babel',
-              plugins: [babel, estree],
-            });
+            try {
+              const formatted = await prettier.format(text, {
+                ...prettierOptions,
+                parser: 'babel',
+                plugins: [babel, estree],
+              });
 
-            return [
-              {
-                range: model.getFullModelRange(),
-                text: formatted,
-              },
-            ];
-          } catch (error) {
-            console.error('Prettier formatting error:', error);
-            return [];
-          }
-        },
-      });
+              return [
+                {
+                  range: model.getFullModelRange(),
+                  text: formatted,
+                },
+              ];
+            } catch (error) {
+              console.error('Prettier formatting error:', error);
+              return [];
+            }
+          },
+        });
 
       // TypeScript 포맷터 등록
-      monaco.languages.registerDocumentFormattingEditProvider('typescript', {
-        async provideDocumentFormattingEdits(model) {
-          const text = model.getValue();
+      const tsDisposable =
+        monaco.languages.registerDocumentFormattingEditProvider('typescript', {
+          async provideDocumentFormattingEdits(model) {
+            const text = model.getValue();
 
-          try {
-            const formatted = await prettier.format(text, {
-              ...prettierOptions,
-              parser: 'typescript',
-              plugins: [typescript, estree],
-            });
+            try {
+              const formatted = await prettier.format(text, {
+                ...prettierOptions,
+                parser: 'typescript',
+                plugins: [typescript, estree],
+              });
 
-            return [
-              {
-                range: model.getFullModelRange(),
-                text: formatted,
-              },
-            ];
-          } catch (error) {
-            console.error('Prettier formatting error:', error);
-            return [];
-          }
-        },
-      });
+              return [
+                {
+                  range: model.getFullModelRange(),
+                  text: formatted,
+                },
+              ];
+            } catch (error) {
+              console.error('Prettier formatting error:', error);
+              return [];
+            }
+          },
+        });
+
+      // Disposable들을 ref에 저장
+      disposablesRef.current = [jsDisposable, tsDisposable];
 
       // 단축키 바인딩
       if (monaco && monaco.KeyMod && monaco.KeyCode) {
@@ -147,6 +153,18 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     suggestOnTriggerCharacters: false,
     acceptSuggestionOnEnter: 'off' as const,
   };
+
+  // Cleanup: unmount 시 포맷터 등록 해제
+  useEffect(() => {
+    return () => {
+      // 모든 disposable 해제
+      disposablesRef.current.forEach((disposable) => {
+        disposable.dispose();
+      });
+
+      disposablesRef.current = [];
+    };
+  }, []);
 
   return (
     <div className="h-full w-full min-h-0">
