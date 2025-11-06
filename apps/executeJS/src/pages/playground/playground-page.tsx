@@ -1,9 +1,10 @@
+import { useState } from 'react';
+
 import { PlusIcon } from '@radix-ui/react-icons';
 
 import { TabButton } from '@/features/tab';
 import { Tab, usePlaygroundStore } from '@/features/playground';
 import { PlaygroundWidget } from '@/widgets/playground';
-import { useState } from 'react';
 
 export interface TabContextMenu {
   id: Tab['id'];
