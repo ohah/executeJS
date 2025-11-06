@@ -1,11 +1,11 @@
 import React from 'react';
 import { Providers } from './providers';
-import { PlaygroundGroups } from '../pages/playground';
+import { PlaygroundPage } from '../pages/playground';
 
 export const App: React.FC = () => {
   return (
     <Providers>
-      <PlaygroundGroups />
+      <PlaygroundPage />
     </Providers>
   );
 };
