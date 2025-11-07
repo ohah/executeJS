@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
+import { invoke } from '@tauri-apps/api/core';
 import { Editor, EditorProps } from '@monaco-editor/react';
 import type { Options as PrettierOptions } from 'prettier';
 import prettier from 'prettier/standalone';
@@ -7,7 +8,7 @@ import babel from 'prettier/plugins/babel';
 import estree from 'prettier/plugins/estree';
 import typescript from 'prettier/plugins/typescript';
 
-import type { CodeEditorProps } from '../../shared/types';
+import { CodeEditorProps, LintResult } from '@/shared';
 
 const prettierOptions: PrettierOptions = {
   semi: true,
@@ -26,12 +27,79 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   theme = 'vs-dark',
 }) => {
   const editorRef = useRef<any>(null);
+  const monacoRef = useRef<any>(null);
   const disposablesRef = useRef<Array<{ dispose(): void }>>([]);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const validateCode = useCallback(async (model: any, version: number) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    debounceTimeoutRef.current = setTimeout(async () => {
+      if (!model || !monacoRef.current) return;
+
+      try {
+        const code = model.getValue();
+
+        // Tauri 백엔드에서 oxlint 실행
+        const lintResults = await invoke<Array<LintResult>>('lint_code', {
+          code,
+        });
+
+        // setModelMarkers 사용
+        const monaco = monacoRef.current;
+        if (monaco && model.getVersionId() === version) {
+          const markers = lintResults.map((result) => {
+            // Monaco는 1-based 인덱스 사용
+            const startColumn = Math.max(1, result.column);
+            const endColumn = Math.max(startColumn + 1, result.end_column);
+
+            // severity를 소문자로 비교하여 MarkerSeverity enum 사용
+            const severity =
+              result.severity.toLowerCase() === 'error'
+                ? monaco.MarkerSeverity.Error
+                : monaco.MarkerSeverity.Warning;
+
+            return {
+              message: `${result.message} (${result.rule_id})`,
+              severity: severity,
+              startLineNumber: result.line,
+              startColumn: startColumn,
+              endLineNumber: result.end_line,
+              endColumn: endColumn,
+              source: 'oxlint',
+              code: result.rule_id,
+            };
+          });
+
+          monaco.editor.setModelMarkers(model, 'oxlint', markers);
+        }
+      } catch (error) {
+        console.error('oxlint validation error:', error);
+        // 에러 발생 시 마커 초기화
+        const monaco = monacoRef.current;
+        if (monaco) {
+          const model = editorRef.current?.getModel();
+          if (model && model.getVersionId() === version) {
+            monaco.editor.setModelMarkers(model, 'oxlint', []);
+          }
+        }
+      }
+    }, 500);
+  }, []);
 
   // Monaco Editor 설정
   const handleEditorDidMount: EditorProps['onMount'] = (editor, monaco) => {
     try {
       editorRef.current = editor;
+      monacoRef.current = monaco;
+
+      // 기본 TypeScript validator 비활성화 (oxlint 사용 시)
+      monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+        noSemanticValidation: true,
+        noSyntaxValidation: true,
+      });
 
       // 이전 등록된 포맷터가 남아있는 경우, 먼저 해제
       if (disposablesRef.current.length > 0) {
@@ -113,6 +181,22 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
         );
       }
 
+      const model = editor.getModel();
+
+      if (model) {
+        // 모델 변경 시 validation
+        model.onDidChangeContent(() => {
+          // Reset the markers
+          monaco.editor.setModelMarkers(model, 'oxlint', []);
+
+          // Send the code to the backend for validation
+          validateCode(model, model.getVersionId());
+        });
+
+        // 초기 validation
+        validateCode(model, model.getVersionId());
+      }
+
       // 에디터 포커스
       editor.focus();
     } catch (error) {
@@ -165,6 +249,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   // Cleanup: unmount 시 포맷터 등록 해제
   useEffect(() => {
     return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
       // 모든 disposable 해제
       disposablesRef.current.forEach((disposable) => {
         disposable.dispose();

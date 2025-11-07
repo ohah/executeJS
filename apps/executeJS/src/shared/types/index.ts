@@ -20,3 +20,13 @@ export interface OutputPanelProps {
   result: JsExecutionResult | null;
   isExecuting: boolean;
 }
+
+export interface LintResult {
+  line: number;
+  column: number;
+  end_line: number;
+  end_column: number;
+  message: string;
+  severity: string;
+  rule_id: string;
+}
