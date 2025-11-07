@@ -43,6 +43,7 @@ native-tls = "0.2"
 tokio-rustls = "0.26"
 tokio-stream = "0.1"
 flate2 = "1.1"
+tempfile = "3.23.0"
 
 # JavaScript 런타임 의존성 (Deno Core)
 deno-runtime = { path = "../../../crates/deno-runtime" }
