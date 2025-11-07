@@ -49,7 +49,7 @@ pub fn run() {
                     tracing::info!("ExecuteJS 애플리케이션이 종료됩니다.");
                 }
             })
-            .invoke_handler(tauri::generate_handler![execute_js, get_app_info])
+            .invoke_handler(tauri::generate_handler![execute_js, get_app_info, lint_code])
             .run(tauri::generate_context!())
             .expect("error while running tauri application");
     }
