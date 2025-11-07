@@ -1,0 +1,125 @@
+name: 버그 리포트
+description: 버그를 발견하셨나요? 알려주세요!
+title: "[버그] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        버그 리포트를 작성해주셔서 감사합니다! 아래 정보를 작성해주시면 문제를 빠르게 해결할 수 있습니다.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 버그 설명
+      description: 버그에 대한 간단한 설명을 작성해주세요.
+      placeholder: 예: JavaScript 코드 실행 시 예상과 다른 결과가 출력됩니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 재현 단계
+      description: 버그를 재현하는 단계를 작성해주세요.
+      placeholder: |
+        1. 앱을 실행합니다
+        2. 에디터에 다음 코드를 입력합니다:
+           console.log('Hello');
+        3. 실행 버튼을 클릭합니다
+        4. 오류가 발생합니다
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 예상 동작
+      description: 정상적으로 동작했을 때 예상되는 결과를 작성해주세요.
+      placeholder: 예: 콘솔에 "Hello"가 출력되어야 합니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제 동작
+      description: 실제로 발생한 동작을 작성해주세요.
+      placeholder: 예: 아무것도 출력되지 않습니다.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 운영체제
+      description: 사용 중인 운영체제를 선택해주세요.
+      options:
+        - macOS
+        - Windows
+        - Linux
+    validations:
+      required: true
+
+  - type: input
+    id: os_version
+    attributes:
+      label: 운영체제 버전
+      description: 운영체제의 버전을 입력해주세요. (예: macOS 14.6, Windows 11, Ubuntu 24.04)
+      placeholder: 예: macOS 14.6.0
+    validations:
+      required: false
+
+  - type: input
+    id: app_version
+    attributes:
+      label: 앱 버전
+      description: ExecuteJS 앱의 버전을 입력해주세요. (설정 > 정보에서 확인 가능)
+      placeholder: 예: 1.0.0
+    validations:
+      required: false
+
+  - type: textarea
+    id: code
+    attributes:
+      label: 관련 코드
+      description: 버그와 관련된 JavaScript 코드가 있다면 공유해주세요. (선택사항)
+      placeholder: |
+        ```javascript
+        console.log('Hello World');
+        ```
+      render: markdown
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 로그/에러 메시지
+      description: 콘솔 로그나 에러 메시지가 있다면 공유해주세요. (선택사항)
+      placeholder: |
+        ```
+        에러 메시지를 여기에 붙여넣으세요
+        ```
+      render: markdown
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 스크린샷
+      description: 문제를 설명하는 스크린샷이 있다면 공유해주세요. (선택사항)
+      placeholder: 스크린샷을 드래그 앤 드롭하거나 붙여넣으세요.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 추가 정보
+      description: 버그와 관련된 추가 정보나 컨텍스트가 있다면 작성해주세요. (선택사항)
+      placeholder: 예: 특정 조건에서만 발생하거나, 최근 업데이트 후 발생하기 시작했습니다.
+    validations:
+      required: false
+
