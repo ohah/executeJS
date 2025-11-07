@@ -1,128 +1,72 @@
-import React, { useState } from 'react';
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import { CodeEditor } from '@/widgets/code-editor';
-import { OutputPanel } from '@/widgets/output-panel';
-import { useExecutionStore } from '@/features/execute-code';
-import { PlayIcon, StopIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
 
-const getInitialCode = (): string => {
-  try {
-    const executionStorage = localStorage.getItem(
-      'executejs-execution-storage'
-    );
+import { PlusIcon } from '@radix-ui/react-icons';
 
-    if (executionStorage) {
-      const parsed = JSON.parse(executionStorage);
-      const code = parsed?.state?.result?.code;
+import { TabButton } from '@/features/tab';
+import { Tab, usePlaygroundStore } from '@/features/playground';
+import { PlaygroundWidget } from '@/widgets/playground';
 
-      if (code) {
-        console.log('result from executionStorage:', code);
-
-        return code;
-      }
-    }
-  } catch (error) {
-    console.error('error from executionStorage:', error);
-  }
-
-  return 'console.log("Hello, ExecuteJS!");';
-};
+export interface TabContextMenu {
+  id: Tab['id'];
+  x: number;
+  y: number;
+}
 
 export const PlaygroundPage: React.FC = () => {
-  // FIXME: tab이 여러개 생기거나 global store로 상태가 이동되면 수정되어야함
-  const [code, setCode] = useState(getInitialCode);
-  const {
-    result: executionResult,
-    isExecuting,
-    executeCode,
-  } = useExecutionStore();
+  const { tabs, activeTabId, addTab, closeTab, setActiveTab, playgrounds } =
+    usePlaygroundStore();
 
-  // 코드 실행 핸들러
-  const handleExecuteCode = (codeToExecute?: string) => {
-    const codeToRun = codeToExecute || code;
-    if (codeToRun.trim()) {
-      executeCode(codeToRun);
-    }
+  const [contextMenu, setContextMenu] = useState<TabContextMenu | null>(null);
+
+  const handleContextMenu = (event: React.MouseEvent, tabId: string) => {
+    event.preventDefault();
+
+    setContextMenu({ id: tabId, x: event.clientX, y: event.clientY });
   };
 
-  // 코드 변경 핸들러
-  const handleCodeChange = (newCode: string) => {
-    setCode(newCode);
-  };
+  const handleCloseContextMenu = () => setContextMenu(null);
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-slate-950 text-white">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="text-sm font-medium text-slate-300">ExecuteJS</div>
+    <div className="overflow-hidden w-screen h-screen">
+      <div className="overflow-x-auto flex items-center border-b border-slate-800">
+        <div className="flex shrink-0">
+          {tabs.map((tab) => {
+            const { id } = tab;
+            const isActive = id === activeTabId;
+
+            return (
+              <TabButton
+                key={id}
+                tab={tab}
+                isActive={isActive}
+                contextMenu={contextMenu}
+                onActiveTab={setActiveTab}
+                onCloseTab={closeTab}
+                onContextMenu={handleContextMenu}
+                onCloseContextMenu={handleCloseContextMenu}
+              />
+            );
+          })}
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleExecuteCode()}
-            disabled={isExecuting || !code.trim()}
-            className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md transition-colors"
-          >
-            {isExecuting ? (
-              <>
-                <StopIcon className="w-4 h-4" />
-                실행 중...
-              </>
-            ) : (
-              <>
-                <PlayIcon className="w-4 h-4" />
-                실행 (Cmd+Enter)
-              </>
-            )}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={addTab}
+          className="shrink-0 p-2 ml-1 rounded-sm hover:bg-[rgba(255,255,255,0.2)] transition-colors cursor-pointer"
+        >
+          <PlusIcon />
+        </button>
       </div>
 
-      {/* 메인 컨텐츠 영역 */}
-      <div className="flex-1 flex">
-        <PanelGroup direction="horizontal" className="flex-1">
-          {/* 왼쪽 패널 - 코드 에디터 */}
-          <Panel defaultSize={50} minSize={30}>
-            <div className="h-full bg-slate-900 border-r border-slate-800">
-              <div className="h-8 bg-slate-800 border-b border-slate-700 flex items-center px-4">
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
-                  Editor
-                </span>
-              </div>
-              <div className="h-[calc(100%-2rem)]">
-                <CodeEditor
-                  value={code}
-                  onChange={handleCodeChange}
-                  onExecute={handleExecuteCode}
-                  language="javascript"
-                  theme="vs-dark"
-                />
-              </div>
-            </div>
-          </Panel>
+      {tabs.map((tab) => {
+        const { playgroundId, id } = tab;
+        const active = tab.id === activeTabId;
+        const playground = playgrounds.get(playgroundId);
 
-          {/* 리사이즈 핸들 */}
-          <PanelResizeHandle className="w-1 bg-slate-800 hover:bg-slate-700 transition-colors" />
+        if (!active || !playground) return null;
 
-          {/* 오른쪽 패널 - 출력 결과 */}
-          <Panel defaultSize={50} minSize={30}>
-            <div className="h-full bg-slate-900">
-              <div className="h-8 bg-slate-800 border-b border-slate-700 flex items-center px-4">
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
-                  Output
-                </span>
-              </div>
-              <div className="h-[calc(100%-2rem)]">
-                <OutputPanel
-                  result={executionResult}
-                  isExecuting={isExecuting}
-                />
-              </div>
-            </div>
-          </Panel>
-        </PanelGroup>
-      </div>
+        return <PlaygroundWidget key={id} playground={playground} />;
+      })}
     </div>
   );
 };

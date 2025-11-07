@@ -1,1 +1,1 @@
-export * from './playground-widget';
+export * from './ui';
