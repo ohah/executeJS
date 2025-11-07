@@ -174,8 +174,6 @@ fn parse_oxlint_output(stdout: &str, stderr: &str) -> Vec<LintResult> {
 
             results
         }
-        Err(_) => {
-            Vec::new()
-        }
+        Err(_) => Vec::new(),
     }
 }
