@@ -16,20 +16,40 @@ executeJS/
 ├── crates/                 # Rust 크레이트들
 ├── Cargo.toml              # Rust 워크스페이스 설정
 ├── package.json            # Node.js 워크스페이스 설정
-└── pnpm-workspace.yaml     # pnpm 워크스페이스 설정
+├── pnpm-workspace.yaml     # pnpm 워크스페이스 설정
+└── mise.toml               # mise 런타임 버전 관리 설정
 ```
 
 ## 개발 환경 설정
 
 ### 필수 요구사항
 
-- Node.js 22 LTS (`.nvmrc` 파일 참조)
-- pnpm 10+
+- Node.js 22 LTS
+- pnpm 10.19.0+
 - Rust 1.70+
 - Tauri CLI
 - VSCode (권장)
 
 ### 설치
+
+#### mise를 사용한 자동 설치 (권장)
+
+프로젝트는 `mise.toml`을 통해 런타임 버전을 관리합니다:
+
+```bash
+# mise 설치 (아직 설치하지 않은 경우)
+curl https://mise.run | sh
+
+# 프로젝트 디렉토리에서 실행
+mise install
+
+# 또는 자동으로 활성화되도록 설정
+mise activate
+```
+
+이제 프로젝트 디렉토리에서 자동으로 올바른 버전의 Node.js, pnpm, Rust가 사용됩니다.
+
+#### 수동 설치
 
 ```bash
 # 의존성 설치
