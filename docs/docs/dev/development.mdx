@@ -6,6 +6,25 @@ ExecuteJS 프로젝트의 개발 환경 설정과 기여 방법을 안내합니�
 
 ### 1. 필수 도구 설치
 
+#### mise를 사용한 자동 설치 (권장)
+
+프로젝트는 `mise.toml`을 통해 런타임 버전을 자동으로 관리합니다:
+
+```bash
+# mise 설치 (아직 설치하지 않은 경우)
+curl https://mise.run | sh
+
+# 프로젝트 디렉토리에서 실행
+mise install
+
+# 또는 자동으로 활성화되도록 설정
+mise activate
+```
+
+이제 프로젝트 디렉토리에서 자동으로 올바른 버전의 Node.js, pnpm, Rust가 사용됩니다.
+
+#### 수동 설치
+
 ```bash
 # Node.js 22 LTS 설치 (nvm 사용 권장)
 nvm install 22
