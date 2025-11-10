@@ -109,8 +109,8 @@ pub async fn lint_code(code: String) -> Result<Vec<LintResult>, String> {
     let temp_path = temp_file.path().to_str().ok_or("Invalid temp path")?;
 
     // 프로젝트 루트 경로 찾기 (현재 실행 파일 위치 기준)
-    let current_exe = std::env::current_exe()
-        .map_err(|e| format!("Failed to get current exe path: {}", e))?;
+    let current_exe =
+        std::env::current_exe().map_err(|e| format!("Failed to get current exe path: {}", e))?;
 
     // Tauri 앱의 경우: target/debug/executeJS 또는 target/release/executeJS
     // 프로젝트 루트는 3단계 위 (target/debug 또는 target/release)
