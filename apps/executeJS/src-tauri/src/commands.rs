@@ -12,14 +12,22 @@ pub struct AppInfo {
 
 // 린트 결과를 나타내는 구조체
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum LintSeverity {
+    Error,
+    Warning,
+    Info,
+    Hint,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LintResult {
     pub line: usize,
     pub column: usize,
     pub end_line: usize,
     pub end_column: usize,
     pub message: String,
-    // "error" 또는 "warning"
-    pub severity: String,
+    pub severity: LintSeverity,
     pub rule_id: String,
 }
 
@@ -199,13 +207,22 @@ fn parse_oxlint_output(stdout: &str, stderr: &str) -> Vec<LintResult> {
                         diagnostic.code.clone()
                     };
 
+                    // severity 변환
+                    let severity = match diagnostic.severity.as_str() {
+                        "error" => LintSeverity::Error,
+                        "warning" => LintSeverity::Warning,
+                        "info" => LintSeverity::Info,
+                        "hint" => LintSeverity::Hint,
+                        _ => LintSeverity::Warning, // 기본값
+                    };
+
                     results.push(LintResult {
                         line,
                         column,
                         end_line: line,
                         end_column,
                         message: diagnostic.message,
-                        severity: diagnostic.severity,
+                        severity,
                         rule_id,
                     });
                 }

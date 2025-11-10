@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 
 import { invoke } from '@tauri-apps/api/core';
-import { Editor, EditorProps } from '@monaco-editor/react';
+import { Editor, EditorProps, Monaco } from '@monaco-editor/react';
 import type { Options as PrettierOptions } from 'prettier';
 import prettier from 'prettier/standalone';
 import babel from 'prettier/plugins/babel';
 import estree from 'prettier/plugins/estree';
 import typescript from 'prettier/plugins/typescript';
 
-import { CodeEditorProps, LintResult } from '@/shared';
+import { CodeEditorProps, LintResult, LintSeverity } from '@/shared';
 
 const prettierOptions: PrettierOptions = {
   semi: true,
@@ -19,6 +19,23 @@ const prettierOptions: PrettierOptions = {
   useTabs: false,
 };
 
+const severityToMarkerSeverity = (severity: LintSeverity, monaco: Monaco) => {
+  switch (severity) {
+    case 'error':
+      return monaco.MarkerSeverity.Error;
+    case 'warning':
+      return monaco.MarkerSeverity.Warning;
+    case 'info':
+      return monaco.MarkerSeverity.Info;
+    case 'hint':
+      return monaco.MarkerSeverity.Hint;
+    default:
+      // 타입 체크로 도달 불가능하지만, 런타임 안전을 위해
+      console.warn(`Unknown severity: ${severity}, defaulting to Warning`);
+      return monaco.MarkerSeverity.Warning;
+  }
+};
+
 export const CodeEditor: React.FC<CodeEditorProps> = ({
   value,
   onChange,
@@ -27,7 +44,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   theme = 'vs-dark',
 }) => {
   const editorRef = useRef<any>(null);
-  const monacoRef = useRef<any>(null);
+  const monacoRef = useRef<Monaco | null>(null);
   const disposablesRef = useRef<Array<{ dispose(): void }>>([]);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -56,10 +73,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
             const endColumn = Math.max(startColumn + 1, result.end_column);
 
             // severity를 소문자로 비교하여 MarkerSeverity enum 사용
-            const severity =
-              result.severity.toLowerCase() === 'error'
-                ? monaco.MarkerSeverity.Error
-                : monaco.MarkerSeverity.Warning;
+            const severity = severityToMarkerSeverity(result.severity, monaco);
 
             return {
               message: `${result.message} (${result.rule_id})`,
