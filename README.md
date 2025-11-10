@@ -47,7 +47,7 @@ mise install
 mise activate
 ```
 
-이제 프로젝트 디렉토리에서 자동으로 올바른 버전의 Node.js, pnpm, Rust가 사용됩니다.
+이제 프로젝트 디렉토리에서 자동으로 올바른 버전의 Node.js와 Rust가 사용됩니다. pnpm은 별도로 설치해야 합니다.
 
 #### 수동 설치
 
