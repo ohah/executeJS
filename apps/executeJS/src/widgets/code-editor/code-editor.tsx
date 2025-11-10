@@ -185,7 +185,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
       if (model) {
         // 모델 변경 시 validation
-        model.onDidChangeContent(() => {
+        const contentChangeDisposable = model.onDidChangeContent(() => {
           // Reset the markers
           monaco.editor.setModelMarkers(model, 'oxlint', []);
 
@@ -193,8 +193,18 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           validateCode(model, model.getVersionId());
         });
 
+        // model이 있는 경우 포맷터 + 이벤트 리스너 저장
+        disposablesRef.current = [
+          jsDisposable,
+          tsDisposable,
+          contentChangeDisposable,
+        ];
+
         // 초기 validation
         validateCode(model, model.getVersionId());
+      } else {
+        // model이 없는 경우 포맷터만 저장
+        disposablesRef.current = [jsDisposable, tsDisposable];
       }
 
       // 에디터 포커스
