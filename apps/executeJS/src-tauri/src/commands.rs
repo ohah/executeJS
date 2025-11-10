@@ -100,15 +100,54 @@ pub async fn lint_code(code: String) -> Result<Vec<LintResult>, String> {
 
     let temp_path = temp_file.path().to_str().ok_or("Invalid temp path")?;
 
-    // oxlint 실행 (JSON 형식으로 출력)
-    let output = Command::new("npx")
-        .arg("--yes")
-        .arg("oxlint")
-        .arg("--format")
-        .arg("json")
-        .arg(temp_path)
-        .output()
-        .map_err(|e| format!("Failed to execute oxlint: {}", e))?;
+    // 프로젝트 루트 경로 찾기 (현재 실행 파일 위치 기준)
+    let current_exe = std::env::current_exe()
+        .map_err(|e| format!("Failed to get current exe path: {}", e))?;
+
+    // Tauri 앱의 경우: target/debug/executeJS 또는 target/release/executeJS
+    // 프로젝트 루트는 3단계 위 (target/debug 또는 target/release)
+    let mut project_root = current_exe
+        .parent() // target/debug 또는 target/release
+        .and_then(|p| p.parent()) // target
+        .and_then(|p| p.parent()) // 프로젝트 루트
+        .ok_or("Failed to find project root")?;
+
+    // 개발 모드에서는 src-tauri가 있으므로 한 단계 더 올라가야 함
+    let src_tauri_path = project_root.join("apps/executeJS/src-tauri");
+    if src_tauri_path.exists() {
+        project_root = src_tauri_path
+            .parent()
+            .and_then(|p| p.parent())
+            .ok_or("Failed to find project root")?;
+    }
+
+    // oxlint 경로: 프로젝트 루트의 node_modules/.bin/oxlint
+    let oxlint_path = project_root
+        .join("node_modules")
+        .join(".bin")
+        .join("oxlint");
+
+    // oxlint 실행 (로컬 설치된 버전 사용)
+    let output = if oxlint_path.exists() {
+        // 로컬 설치된 oxlint 사용
+        Command::new(oxlint_path)
+            .arg("--format")
+            .arg("json")
+            .arg(temp_path)
+            .output()
+            .map_err(|e| format!("Failed to execute oxlint: {}", e))?
+    } else {
+        // fallback: pnpm exec oxlint (pnpm이 설치되어 있다면)
+        Command::new("pnpm")
+            .arg("exec")
+            .arg("oxlint")
+            .arg("--format")
+            .arg("json")
+            .arg(temp_path)
+            .current_dir(project_root)
+            .output()
+            .map_err(|e| format!("Failed to execute oxlint: {}", e))?
+    };
 
     drop(temp_file);
 
