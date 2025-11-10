@@ -230,6 +230,12 @@ fn parse_oxlint_output(stdout: &str, stderr: &str) -> Vec<LintResult> {
 
             results
         }
-        Err(_) => Vec::new(),
+        Err(e) => {
+            // 에러 로깅 추가
+            eprintln!("Failed to parse oxlint output: {}", e);
+            eprintln!("stdout: {}", stdout);
+            eprintln!("stderr: {}", stderr);
+            Vec::new()
+        }
     }
 }
