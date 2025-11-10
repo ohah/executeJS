@@ -190,8 +190,8 @@ fn parse_oxlint_output(stdout: &str, stderr: &str) -> Vec<LintResult> {
                     let end_column = if span.length > 0 {
                         column + span.length
                     } else {
-                        // length가 없을 경우 기본값 사용
-                        column + 10
+                        // length가 없을 경우 최소값 사용
+                        column + 1
                     };
 
                     // code에서 rule_id 추출
