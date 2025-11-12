@@ -25,4 +25,12 @@ export default defineConfig(async () => ({
       ignored: ['**/src-tauri/**'],
     },
   },
+  // SPA 라우팅 지원: 모든 경로를 index.html로 리다이렉트
+  build: {
+    rollupOptions: {
+      input: {
+        main: './index.html',
+      },
+    },
+  },
 }));
