@@ -77,28 +77,27 @@ pub fn run() {
                         }
                         "settings" => {
                             // Settings 창이 이미 열려있는지 확인
-                            if let Some(existing_window) = app_handle.get_webview_window("settings") {
+                            if let Some(existing_window) = app_handle.get_webview_window("settings")
+                            {
                                 existing_window.set_focus().unwrap_or_default();
                             } else {
                                 // 새 Settings 창 생성
                                 // 개발 모드에서는 devUrl 사용, 프로덕션에서는 App 경로 사용
                                 let url = if cfg!(debug_assertions) {
-                                    WebviewUrl::External("http://localhost:1420/settings".parse().unwrap())
+                                    WebviewUrl::External(
+                                        "http://localhost:1420/settings".parse().unwrap(),
+                                    )
                                 } else {
                                     // TODO: 해시 라우팅을 사용하여 Settings 페이지로 이동 처리. 다른 방법으로 수정 필요
                                     WebviewUrl::App("index.html#/settings".into())
                                 };
 
-                                match WebviewWindowBuilder::new(
-                                    app_handle,
-                                    "settings",
-                                    url,
-                                )
-                                .title("General")
-                                .inner_size(800.0, 600.0)
-                                .min_inner_size(600.0, 400.0)
-                                .resizable(true)
-                                .build()
+                                match WebviewWindowBuilder::new(app_handle, "settings", url)
+                                    .title("General")
+                                    .inner_size(800.0, 600.0)
+                                    .min_inner_size(600.0, 400.0)
+                                    .resizable(true)
+                                    .build()
                                 {
                                     Ok(settings_window) => {
                                         // Settings 창에서 개발자 도구 자동 열기
