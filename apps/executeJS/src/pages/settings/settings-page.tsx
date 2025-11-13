@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import React, { useRef, useState } from 'react';
+import { getCurrentWindow, Window } from '@tauri-apps/api/window';
 
 type SettingsTab =
   | 'general'
@@ -28,12 +28,13 @@ const TABS: { id: SettingsTab; label: string }[] = [
 ];
 
 export const SettingsPage: React.FC = () => {
+  const windowRef = useRef<Window>(getCurrentWindow());
+
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
 
   const updateWindowTitle = async (tabId: SettingsTab) => {
     try {
-      const window = getCurrentWindow();
-      await window.setTitle(TAB_TITLES[tabId]);
+      await windowRef.current.setTitle(TAB_TITLES[tabId]);
     } catch (error) {
       console.error('창 제목 변경 실패:', error);
     }
