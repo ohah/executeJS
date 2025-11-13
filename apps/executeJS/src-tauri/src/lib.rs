@@ -85,7 +85,7 @@ pub fn run() {
                                 // 개발 모드에서는 devUrl 사용, 프로덕션에서는 App 경로 사용
                                 let url = if cfg!(debug_assertions) {
                                     WebviewUrl::External(
-                                        "http://localhost:1420/settings".parse().unwrap(),
+                                        "http://localhost:1420/settings".parse().expect("failed to parse dev settings URL"),
                                     )
                                 } else {
                                     // TODO: 해시 라우팅을 사용하여 Settings 페이지로 이동 처리. 다른 방법으로 수정 필요
