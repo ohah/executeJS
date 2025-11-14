@@ -77,7 +77,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
             return {
               message: `${result.message} (${result.rule_id})`,
-              severity: severity,
+              severity,
               startLineNumber: result.line,
               startColumn: startColumn,
               endLineNumber: result.end_line,
