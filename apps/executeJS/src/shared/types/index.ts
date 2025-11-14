@@ -20,3 +20,15 @@ export interface OutputPanelProps {
   result: JsExecutionResult | null;
   isExecuting: boolean;
 }
+
+export type LintSeverity = 'error' | 'warning' | 'info' | 'hint';
+
+export interface LintResult {
+  line: number;
+  column: number;
+  end_line: number;
+  end_column: number;
+  message: string;
+  severity: LintSeverity;
+  rule_id: string;
+}
