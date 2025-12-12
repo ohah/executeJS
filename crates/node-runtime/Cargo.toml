@@ -1,0 +1,18 @@
+[package]
+name = "node-runtime"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Node.js 기반 JavaScript 런타임"
+
+[dependencies]
+# Workspace dependencies
+anyhow.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+

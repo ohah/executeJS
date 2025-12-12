@@ -23,13 +23,24 @@
     ],
     "security": {
       "csp": null,
-      "capabilities": ["main"]
+      "capabilities": [
+        "main"
+      ]
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["msi", "nsis", "dmg", "app"],
+    "targets": [
+      "msi",
+      "nsis",
+      "dmg",
+      "app"
+    ],
     "icon": [],
+    "resources": [
+      "resources/node-runtime/node-v24.12.0-darwin-arm64/node",
+      "resources/node-runtime/node-v24.12.0-win-arm64/node.exe"
+    ],
     "macOS": {
       "entitlements": null,
       "exceptionDomain": "",

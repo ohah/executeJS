@@ -1,6 +1,7 @@
 use crate::js_executor::{execute_javascript_code, JsExecutionResult};
 use serde::{Deserialize, Serialize};
-use std::process::Command;
+// 비활성화: Command import (lint_code가 주석 처리되어 사용 안 함)
+// use std::process::Command;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AppInfo {
@@ -10,6 +11,8 @@ pub struct AppInfo {
     pub author: String,
 }
 
+// 비활성화: 린트 관련 구조체
+/*
 // 린트 결과를 나타내는 구조체
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -60,6 +63,7 @@ struct OxlintSpan {
     #[serde(default)]
     length: usize,
 }
+*/
 
 #[tauri::command]
 pub async fn execute_js(code: &str) -> Result<JsExecutionResult, JsExecutionResult> {
@@ -92,7 +96,8 @@ pub fn get_app_info() -> AppInfo {
     }
 }
 
-// JavaScript 코드를 oxlint로 린트하고 결과를 반환
+// 비활성화: JavaScript 코드를 oxlint로 린트하고 결과를 반환
+/*
 #[tauri::command]
 pub async fn lint_code(code: String) -> Result<Vec<LintResult>, String> {
     use std::io::Write;
@@ -239,3 +244,4 @@ fn parse_oxlint_output(stdout: &str, stderr: &str) -> Vec<LintResult> {
         }
     }
 }
+*/

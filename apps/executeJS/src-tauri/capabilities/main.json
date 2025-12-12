@@ -1,9 +1,16 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
-  "windows": ["main", "settings"],
+  "windows": [
+    "main",
+    "settings"
+  ],
   "permissions": [
-    "core:window:allow-set-title"
+    "core:window:allow-set-title",
+    "http:default",
+    "opener:default",
+    "fs:default",
+    "clipboard-manager:default",
+    "store:default"
   ]
 }
-
