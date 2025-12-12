@@ -29,7 +29,9 @@ const getPlatformInfo = () => {
       binaryName: 'node.exe',
     };
   } else {
-    throw new Error(`Unsupported platform: ${platform}. Only macOS and Windows are supported.`);
+    // CI 환경이거나 지원하지 않는 플랫폼인 경우 조용히 종료
+    // GitHub Actions는 Linux에서 실행되지만 바이너리는 필요 없음
+    return null;
   }
 };
 
@@ -145,6 +147,13 @@ const copyBinary = async (platformInfo, extractDir) => {
 const main = async () => {
   try {
     const platformInfo = getPlatformInfo();
+
+    // 지원하지 않는 플랫폼이거나 CI 환경인 경우 조용히 종료
+    if (!platformInfo) {
+      console.log(`현재 플랫폼(${process.platform})에서는 Node.js 바이너리 다운로드가 필요하지 않습니다.`);
+      return;
+    }
+
     const { os, arch, extension } = platformInfo;
 
     const fileName = `node-${NODE_VERSION}-${os}-${arch}.${extension}`;
