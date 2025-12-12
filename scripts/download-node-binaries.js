@@ -41,15 +41,30 @@ const downloadFile = async (url, destPath) => {
     console.log(`다운로드 중: ${url}`);
     const file = createWriteStream(destPath);
 
+    // 파일 스트림 정리 헬퍼 함수
+    const cleanup = (callback) => {
+      file.close(() => {
+        fs.unlink(destPath, () => {
+          callback();
+        });
+      });
+    };
+
     https
       .get(url, (response) => {
         if (response.statusCode === 302 || response.statusCode === 301) {
-          // 리다이렉트 처리
-          return downloadFile(response.headers.location, destPath).then(resolve).catch(reject);
+          // 리다이렉트 처리 - 파일 스트림 정리 후 재귀 호출
+          cleanup(() => {
+            downloadFile(response.headers.location, destPath).then(resolve).catch(reject);
+          });
+          return;
         }
 
         if (response.statusCode !== 200) {
-          reject(new Error(`다운로드 실패: ${response.statusCode}`));
+          // 비-200 상태 코드 - 파일 스트림 정리 후 reject
+          cleanup(() => {
+            reject(new Error(`다운로드 실패: ${response.statusCode}`));
+          });
           return;
         }
 
@@ -73,12 +88,18 @@ const downloadFile = async (url, destPath) => {
         });
 
         file.on('error', (err) => {
-          fs.unlink(destPath, () => {});
-          reject(err);
+          file.close(() => {
+            fs.unlink(destPath, () => {
+              reject(err);
+            });
+          });
         });
       })
       .on('error', (err) => {
-        reject(err);
+        // HTTP 요청 에러 - 파일 스트림 정리 후 reject
+        cleanup(() => {
+          reject(err);
+        });
       });
   });
 };
