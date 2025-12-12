@@ -70,3 +70,10 @@ temp/
 
 # Tauri generated files
 **/src-tauri/gen
+
+# Node.js 바이너리 (자동 다운로드됨)
+apps/executeJS/src-tauri/resources/node-runtime/**/node
+apps/executeJS/src-tauri/resources/node-runtime/**/node.exe
+
+# 임시 다운로드 디렉토리
+.temp-node-download/

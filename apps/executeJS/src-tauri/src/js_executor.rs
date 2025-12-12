@@ -1,4 +1,4 @@
-use deno_runtime::DenoExecutor;
+use node_runtime::NodeExecutor;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -24,8 +24,8 @@ pub async fn execute_javascript_code(code: &str) -> JsExecutionResult {
         };
     }
 
-    // DenoExecutor를 사용한 실제 JavaScript 실행
-    match execute_with_deno(code).await {
+    // NodeExecutor를 사용한 실제 JavaScript 실행
+    match execute_with_node(code).await {
         Ok(output) => JsExecutionResult {
             code: code.to_string(),
             result: output,
@@ -43,10 +43,10 @@ pub async fn execute_javascript_code(code: &str) -> JsExecutionResult {
     }
 }
 
-/// Deno를 사용한 JavaScript 코드 실행
-async fn execute_with_deno(code: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-    // DenoExecutor 생성
-    let mut executor = DenoExecutor::new().await.map_err(|e| format!("{}", e))?;
+/// Node.js를 사용한 JavaScript 코드 실행
+async fn execute_with_node(code: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+    // NodeExecutor 생성
+    let executor = NodeExecutor::new().map_err(|e| format!("{}", e))?;
 
     // 코드 실행
     let result = executor
