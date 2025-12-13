@@ -50,6 +50,43 @@ impl NpmManager {
         &self.node_modules_path
     }
 
+    /// Node.js 내장 모듈인지 확인
+    fn is_builtin_module(name: &str) -> bool {
+        matches!(
+            name,
+            "assert"
+                | "buffer"
+                | "child_process"
+                | "cluster"
+                | "console"
+                | "crypto"
+                | "dgram"
+                | "dns"
+                | "events"
+                | "fs"
+                | "http"
+                | "https"
+                | "net"
+                | "os"
+                | "path"
+                | "process"
+                | "punycode"
+                | "querystring"
+                | "readline"
+                | "repl"
+                | "stream"
+                | "string_decoder"
+                | "timers"
+                | "tls"
+                | "tty"
+                | "url"
+                | "util"
+                | "v8"
+                | "vm"
+                | "zlib"
+        )
+    }
+
     /// 코드에서 필요한 npm 패키지 목록 추출
     pub fn parse_required_packages(code: &str) -> Result<Vec<String>> {
         let allocator = Allocator::default();
@@ -68,7 +105,14 @@ impl NpmManager {
         let mut extractor = PackageExtractor::new();
         extractor.visit_program(&ret.program);
 
-        Ok(extractor.packages.into_iter().collect())
+        // 내장 모듈 필터링
+        let packages: Vec<String> = extractor
+            .packages
+            .into_iter()
+            .filter(|pkg| !Self::is_builtin_module(pkg))
+            .collect();
+
+        Ok(packages)
     }
 
     /// 패키지가 이미 설치되어 있는지 확인

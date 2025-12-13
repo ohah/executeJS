@@ -15,7 +15,8 @@ fn test_parse_required_packages_require() {
 
     let packages = NpmManager::parse_required_packages(code).unwrap();
     assert!(packages.contains(&"lodash".to_string()));
-    assert!(packages.contains(&"fs".to_string()));
+    // fs는 Node.js 내장 모듈이므로 npm 패키지 목록에 포함되지 않아야 함
+    assert!(!packages.contains(&"fs".to_string()));
 }
 
 #[test]
@@ -29,7 +30,8 @@ fn test_parse_required_packages_import() {
 
     let packages = NpmManager::parse_required_packages(code).unwrap();
     assert!(packages.contains(&"lodash".to_string()));
-    assert!(packages.contains(&"fs".to_string()));
+    // fs는 Node.js 내장 모듈이므로 npm 패키지 목록에 포함되지 않아야 함
+    assert!(!packages.contains(&"fs".to_string()));
 }
 
 #[test]
@@ -97,4 +99,24 @@ fn test_parse_required_packages_scoped() {
 
     let packages = NpmManager::parse_required_packages(code).unwrap();
     assert!(packages.contains(&"@scope/package".to_string()));
+}
+
+#[test]
+fn test_parse_required_packages_builtin_modules() {
+    let _lock = TEST_LOCK.lock().unwrap();
+
+    let code = r#"
+        const fs = require('fs');
+        const path = require('path');
+        const http = require('http');
+        const lodash = require('lodash');
+    "#;
+
+    let packages = NpmManager::parse_required_packages(code).unwrap();
+    // 내장 모듈은 제외되어야 함
+    assert!(!packages.contains(&"fs".to_string()));
+    assert!(!packages.contains(&"path".to_string()));
+    assert!(!packages.contains(&"http".to_string()));
+    // npm 패키지만 포함되어야 함
+    assert!(packages.contains(&"lodash".to_string()));
 }
