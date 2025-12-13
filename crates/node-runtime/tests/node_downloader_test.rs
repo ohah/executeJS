@@ -63,4 +63,3 @@ fn test_base_url() {
     assert!(expected_url.contains(NODE_VERSION));
     assert!(expected_url.ends_with('/'));
 }
-

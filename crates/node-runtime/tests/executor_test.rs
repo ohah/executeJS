@@ -99,4 +99,3 @@ async fn test_object_logging() {
     // Node.js는 객체를 자동으로 직렬화하여 출력
     assert!(output.contains("name") || output.contains("Test"));
 }
-
