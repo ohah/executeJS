@@ -1,6 +1,6 @@
 mod execution;
 mod executor;
-mod node_downloader;
+pub mod node_downloader;
 
 // 공개 API
 pub use execution::ExecutionOutput;

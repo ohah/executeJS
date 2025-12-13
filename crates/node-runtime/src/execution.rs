@@ -27,4 +27,3 @@ impl ExecutionOutput {
         output.join("\n")
     }
 }
-
