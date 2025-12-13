@@ -1,7 +1,7 @@
 mod execution;
 mod executor;
-mod npm_manager;
 pub mod node_downloader;
+mod npm_manager;
 
 // 공개 API
 pub use execution::ExecutionOutput;
