@@ -293,7 +293,7 @@ impl<'a> Visit<'a> for PackageExtractor {
             // Argument를 Expression으로 변환할 수 없으므로,
             // visit_argument에서 직접 처리
             self.visit_argument(arg);
-            
+
             // 추가로 visit_expression도 호출하여 확실하게 처리
             // 하지만 Argument를 Expression으로 변환할 수 없으므로 불가능
             // 대신 visit_argument에서 모든 variant를 처리해야 함
@@ -312,7 +312,7 @@ impl<'a> Visit<'a> for PackageExtractor {
             if matches!(arg, Argument::SpreadElement(_)) {
                 return;
             }
-            
+
             // Argument는 Expression을 상속받으므로 StringLiteral variant를 포함
             // Argument::StringLiteral로 패턴 매칭
             if let Argument::StringLiteral(lit) = arg {
