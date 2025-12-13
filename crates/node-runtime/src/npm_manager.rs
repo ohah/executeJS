@@ -267,9 +267,6 @@ impl<'a> Visit<'a> for PackageExtractor {
         let was_in_require = self.in_require_call;
         let was_in_resolve = self.in_require_resolve;
 
-        // callee를 먼저 방문하여 require.resolve를 감지
-        self.visit_expression(&expr.callee);
-
         // callee가 Identifier인 경우 (require('...'))
         if let Expression::Identifier(ident) = &expr.callee {
             if ident.name.as_str() == "require" {
@@ -277,9 +274,29 @@ impl<'a> Visit<'a> for PackageExtractor {
             }
         }
 
+        // callee가 StaticMemberExpression인 경우 (require.resolve('...'))
+        if let Expression::StaticMemberExpression(static_member) = &expr.callee {
+            if let Expression::Identifier(ident) = &static_member.object {
+                if ident.name.as_str() == "require"
+                    && static_member.property.name.as_str() == "resolve"
+                {
+                    self.in_require_resolve = true;
+                }
+            }
+        }
+
         // arguments 방문
+        // Argument는 Expression을 상속받으므로, visit_argument에서 처리
+        // 하지만 Argument::StringLiteral 패턴 매칭이 작동하지 않을 수 있으므로,
+        // visit_argument에서 Argument를 Expression으로 변환하여 visit_expression 호출 시도
         for arg in &expr.arguments {
+            // Argument를 Expression으로 변환할 수 없으므로,
+            // visit_argument에서 직접 처리
             self.visit_argument(arg);
+            
+            // 추가로 visit_expression도 호출하여 확실하게 처리
+            // 하지만 Argument를 Expression으로 변환할 수 없으므로 불가능
+            // 대신 visit_argument에서 모든 variant를 처리해야 함
         }
 
         // 컨텍스트 복원
@@ -291,7 +308,13 @@ impl<'a> Visit<'a> for PackageExtractor {
         // Argument는 Expression을 상속받으므로 Expression의 모든 variant를 포함
         // require() 또는 require.resolve() 호출의 인자인 경우에만 StringLiteral 추출
         if self.in_require_call || self.in_require_resolve {
-            // Argument는 Expression의 variant를 포함하므로 StringLiteral로 패턴 매칭 가능
+            // SpreadElement는 무시
+            if matches!(arg, Argument::SpreadElement(_)) {
+                return;
+            }
+            
+            // Argument는 Expression을 상속받으므로 StringLiteral variant를 포함
+            // Argument::StringLiteral로 패턴 매칭
             if let Argument::StringLiteral(lit) = arg {
                 let value = lit.value.to_string();
                 self.extract_package_name_from_string(&value);
@@ -307,6 +330,8 @@ impl<'a> Visit<'a> for PackageExtractor {
                 self.extract_package_name_from_string(&value);
             }
         }
+        // Visit trait이 자동으로 하위 노드를 방문하지 않으므로
+        // visit_member_expression은 별도로 호출되어야 함
     }
 
     fn visit_member_expression(&mut self, member_expr: &MemberExpression<'a>) {
