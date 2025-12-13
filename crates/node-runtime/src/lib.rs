@@ -1,4 +1,7 @@
+mod node_downloader;
+
 use anyhow::{Context, Result};
+use node_downloader::NodeDownloader;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
 use tokio::io::{AsyncReadExt, BufReader};
@@ -52,25 +55,19 @@ impl NodeExecutor {
 
     /// OS별 Node.js 바이너리 경로 찾기
     fn find_node_binary() -> Result<PathBuf> {
-        let (os_name, binary_name) = if cfg!(target_os = "windows") {
-            ("win-arm64", "node.exe")
-        } else if cfg!(target_os = "macos") {
-            if cfg!(target_arch = "aarch64") {
-                ("darwin-arm64", "node")
-            } else {
-                ("darwin-x64", "node")
-            }
-        } else if cfg!(target_os = "linux") {
-            if cfg!(target_arch = "aarch64") {
-                ("linux-arm64", "node")
-            } else {
-                ("linux-x64", "node")
-            }
-        } else {
-            anyhow::bail!("지원하지 않는 운영체제입니다: {}", std::env::consts::OS);
-        };
+        let (os_name, arch, _extension, binary_name) = NodeDownloader::get_platform_info()?;
 
-        // 1. 개발 모드: src-tauri/resources/ 폴더에서 찾기
+        // 1. 캐시 경로에서 찾기 (우선)
+        let cache_dir = NodeDownloader::cache_dir()?;
+        let node_dir = cache_dir.join(format!("node-v24.12.0-{}-{}", os_name, arch));
+        let node_path = node_dir.join(&binary_name);
+
+        if node_path.exists() {
+            tracing::debug!("캐시에서 Node.js 바이너리 발견: {}", node_path.display());
+            return Self::set_permissions_if_needed(node_path);
+        }
+
+        // 2. 개발 모드: src-tauri/resources/ 폴더에서 찾기 (폴백)
         // CARGO_MANIFEST_DIR에서 src-tauri로 이동 (crates/node-runtime -> 프로젝트 루트 -> apps/executeJS/src-tauri)
         let manifest_dir = env!("CARGO_MANIFEST_DIR");
         let crate_root = Path::new(manifest_dir);
@@ -84,8 +81,8 @@ impl NodeExecutor {
             let resources_node_dir = tauri_dir
                 .join("resources")
                 .join("node-runtime")
-                .join(format!("node-v24.12.0-{}", os_name));
-            let resources_node_path = resources_node_dir.join(binary_name);
+                .join(format!("node-v24.12.0-{}-{}", os_name, arch));
+            let resources_node_path = resources_node_dir.join(&binary_name);
 
             if resources_node_path.exists() {
                 tracing::debug!(
@@ -96,11 +93,9 @@ impl NodeExecutor {
             }
         }
 
-        // 2. 프로덕션 모드: 실행 파일 위치 기준으로 리소스 찾기
-        // Tauri 앱의 경우 실행 파일과 같은 디렉토리나 리소스 디렉토리에서 찾기
+        // 3. 프로덕션 모드: 실행 파일 위치 기준으로 리소스 찾기 (폴백, 거의 사용되지 않음)
+        // 캐시 경로가 우선이므로 이 경로는 거의 사용되지 않음
         if let Ok(exe_path) = std::env::current_exe() {
-            eprintln!("[NodeExecutor] 실행 파일 경로: {}", exe_path.display());
-
             // macOS .app 번들 구조: .app/Contents/MacOS/executeJS -> .app/Contents/Resources/
             #[cfg(target_os = "macos")]
             {
@@ -130,8 +125,8 @@ impl NodeExecutor {
                             // 1. node-runtime/node-v24.12.0-*/node (우선 확인 - tauri.conf.json 설정에 따라)
                             let resource_path = resources_dir
                                 .join("node-runtime")
-                                .join(format!("node-v24.12.0-{}", os_name))
-                                .join(binary_name);
+                                .join(format!("node-v24.12.0-{}-{}", os_name, arch))
+                                .join(&binary_name);
                             eprintln!(
                                 "[NodeExecutor] 경로 1 확인 (우선): {}",
                                 resource_path.display()
@@ -145,8 +140,8 @@ impl NodeExecutor {
                             let resource_path2 = resources_dir
                                 .join("resources")
                                 .join("node-runtime")
-                                .join(format!("node-v24.12.0-{}", os_name))
-                                .join(binary_name);
+                                .join(format!("node-v24.12.0-{}-{}", os_name, arch))
+                                .join(&binary_name);
                             eprintln!("[NodeExecutor] 경로 2 확인: {}", resource_path2.display());
                             if resource_path2.exists() {
                                 eprintln!("[NodeExecutor] ✅ 경로 2에서 발견!");
@@ -160,8 +155,8 @@ impl NodeExecutor {
                                 .join("_up_")
                                 .join("resources")
                                 .join("node-runtime")
-                                .join(format!("node-v24.12.0-{}", os_name))
-                                .join(binary_name);
+                                .join(format!("node-v24.12.0-{}-{}", os_name, arch))
+                                .join(&binary_name);
                             eprintln!(
                                 "[NodeExecutor] 경로 3 확인 (이전 호환): {}",
                                 tauri_resource_path.display()
@@ -191,7 +186,7 @@ impl NodeExecutor {
                             }
 
                             // 4. 직접 Resources에 있는 경우
-                            let direct_resource_path = resources_dir.join(binary_name);
+                            let direct_resource_path = resources_dir.join(&binary_name);
                             eprintln!(
                                 "[NodeExecutor] 경로 4 확인: {}",
                                 direct_resource_path.display()
@@ -221,8 +216,8 @@ impl NodeExecutor {
                     let resource_path = path
                         .join("resources")
                         .join("node-runtime")
-                        .join(format!("node-v24.12.0-{}", os_name))
-                        .join(binary_name);
+                        .join(format!("node-v24.12.0-{}-{}", os_name, arch))
+                        .join(&binary_name);
                     if resource_path.exists() {
                         tracing::info!(
                             "프로덕션 모드 (depth {}): Node.js 바이너리 경로: {}",
@@ -235,8 +230,8 @@ impl NodeExecutor {
                     // 리소스가 직접 있는 경우 (폴더 구조 없이)
                     let direct_resource_path = path
                         .join("node-runtime")
-                        .join(format!("node-v24.12.0-{}", os_name))
-                        .join(binary_name);
+                        .join(format!("node-v24.12.0-{}-{}", os_name, arch))
+                        .join(&binary_name);
                     if direct_resource_path.exists() {
                         tracing::info!(
                             "프로덕션 모드 (직접, depth {}): Node.js 바이너리 경로: {}",
@@ -247,7 +242,7 @@ impl NodeExecutor {
                     }
 
                     // Windows/Linux: 실행 파일과 같은 디렉토리
-                    let same_dir_path = path.join(binary_name);
+                    let same_dir_path = path.join(&binary_name);
                     if same_dir_path.exists() && path != exe_path.parent().unwrap() {
                         // 실행 파일과 같은 디렉토리가 아닌 경우만 (이미 확인했으므로)
                         // 이건 실제로는 필요 없을 수 있음
@@ -260,35 +255,24 @@ impl NodeExecutor {
             }
         }
 
-        // 에러 메시지용 경로 생성
-        let error_path = if let Some(ref tauri_dir) = src_tauri_dir {
-            tauri_dir
-                .join("resources")
-                .join("node-runtime")
-                .join(format!("node-v24.12.0-{}", os_name))
-                .join(binary_name)
-        } else {
-            PathBuf::from("apps/executeJS/src-tauri/resources/node-runtime/...")
-        };
-
-        // 디버깅을 위한 상세 정보
-        let exe_info = std::env::current_exe()
-            .map(|p| format!("{}", p.display()))
-            .unwrap_or_else(|_| "알 수 없음".to_string());
-
+        // 에러 메시지
+        let cache_path = cache_dir.join(format!("node-v24.12.0-{}-{}", os_name, arch));
         anyhow::bail!(
             "Node.js 바이너리를 찾을 수 없습니다.\n\
-            - 개발 모드 경로: {}\n\
-            - 실행 파일 경로: {}\n\
+            - 캐시 경로: {}\n\
             - OS: {}, Arch: {}\n\
             - 바이너리 이름: {}\n\
-            src-tauri/resources/node-runtime/ 폴더에 Node.js 바이너리가 있는지 확인하세요.",
-            error_path.display(),
-            exe_info,
+            앱을 재시작하면 자동으로 다운로드됩니다.",
+            cache_path.display(),
             std::env::consts::OS,
             std::env::consts::ARCH,
             binary_name
         );
+    }
+
+    /// Node.js 바이너리 확인 및 다운로드 (공개 메서드)
+    pub async fn ensure_node_binary() -> Result<PathBuf> {
+        NodeDownloader::ensure_node_binary().await
     }
 
     /// 실행 권한 설정 (필요한 경우)

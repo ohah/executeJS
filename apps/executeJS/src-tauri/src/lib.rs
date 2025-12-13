@@ -150,6 +150,23 @@ pub fn run() {
             // 앱 시작 시 초기화 작업
             tauri::async_runtime::spawn(async {
                 tracing::info!("ExecuteJS 애플리케이션이 시작되었습니다.");
+
+                // Node.js 바이너리 확인 및 다운로드
+                eprintln!("[ExecuteJS] Node.js 바이너리 확인 시작...");
+                match node_runtime::NodeExecutor::ensure_node_binary().await {
+                    Ok(path) => {
+                        eprintln!(
+                            "[ExecuteJS] ✅ Node.js 바이너리 준비 완료: {}",
+                            path.display()
+                        );
+                        tracing::info!("Node.js 바이너리 준비 완료: {}", path.display());
+                    }
+                    Err(e) => {
+                        eprintln!("[ExecuteJS] ❌ Node.js 바이너리 초기화 실패: {}", e);
+                        tracing::error!("Node.js 바이너리 초기화 실패: {}", e);
+                        // 사용자에게 알림은 나중에 UI로 표시할 수 있음
+                    }
+                }
             });
 
             Ok(())

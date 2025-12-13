@@ -37,10 +37,6 @@
       "app"
     ],
     "icon": [],
-    "resources": [
-      "resources/node-runtime/node-v24.12.0-darwin-arm64/node",
-      "resources/node-runtime/node-v24.12.0-win-arm64/node.exe"
-    ],
     "macOS": {
       "entitlements": null,
       "exceptionDomain": "",
