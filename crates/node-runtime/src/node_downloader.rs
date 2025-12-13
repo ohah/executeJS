@@ -6,8 +6,11 @@ use tar::Archive;
 use xz2::read::XzDecoder;
 use zip::ZipArchive;
 
-const NODE_VERSION: &str = "v24.12.0";
-const BASE_URL: &str = "https://nodejs.org/dist/v24.12.0/";
+pub const NODE_VERSION: &str = "v24.12.0";
+
+fn base_url() -> String {
+    format!("https://nodejs.org/dist/{}/", NODE_VERSION)
+}
 
 pub struct NodeDownloader;
 
@@ -64,7 +67,7 @@ impl NodeDownloader {
         let (os_name, arch, _extension, binary_name) = Self::get_platform_info()?;
         let cache_dir = Self::cache_dir()?;
         // find_node_binary와 동일한 경로 형식 사용
-        let node_dir = cache_dir.join(format!("node-v24.12.0-{}-{}", os_name, arch));
+        let node_dir = cache_dir.join(format!("node-{}-{}-{}", NODE_VERSION, os_name, arch));
         let node_path = node_dir.join(&binary_name);
 
         // 이미 존재하면 반환
@@ -101,10 +104,10 @@ impl NodeDownloader {
         let (os_name, arch, extension, binary_name) = Self::get_platform_info()?;
         let cache_dir = Self::cache_dir()?;
         // find_node_binary와 동일한 경로 형식 사용
-        let node_dir = cache_dir.join(format!("node-v24.12.0-{}-{}", os_name, arch));
+        let node_dir = cache_dir.join(format!("node-{}-{}-{}", NODE_VERSION, os_name, arch));
 
         let file_name = format!("node-{}-{}-{}.{}", NODE_VERSION, os_name, arch, extension);
-        let download_url = format!("{}{}", BASE_URL, file_name);
+        let download_url = format!("{}{}", base_url(), file_name);
 
         tracing::info!("Node.js 다운로드 시작: {}", download_url);
         tracing::info!("캐시 디렉토리: {}", cache_dir.display());
@@ -114,6 +117,15 @@ impl NodeDownloader {
         let response = reqwest::get(&download_url)
             .await
             .context("Node.js 다운로드 실패")?;
+
+        // HTTP 응답 상태 코드 확인
+        if !response.status().is_success() {
+            anyhow::bail!(
+                "Node.js 다운로드 실패: HTTP {} - {}",
+                response.status(),
+                response.status().canonical_reason().unwrap_or("알 수 없는 오류")
+            );
+        }
 
         let bytes = response
             .bytes()
@@ -191,12 +203,16 @@ impl NodeDownloader {
 
         // 임시 파일 정리
         tracing::info!("임시 파일 정리 중...");
-        let _ = fs::remove_file(&temp_file);
+        if let Err(e) = fs::remove_file(&temp_file) {
+            tracing::warn!("임시 파일 삭제 실패 ({}): {}", temp_file.display(), e);
+        }
 
         // extracted_dir와 node_dir가 같은 경우 삭제하지 않음 (바이너리가 이미 올바른 위치에 있음)
         if extracted_dir != node_dir && extracted_dir.exists() {
             tracing::info!("압축 해제 디렉토리 정리 중: {}", extracted_dir.display());
-            let _ = fs::remove_dir_all(&extracted_dir);
+            if let Err(e) = fs::remove_dir_all(&extracted_dir) {
+                tracing::warn!("압축 해제 디렉토리 삭제 실패 ({}): {}", extracted_dir.display(), e);
+            }
         } else {
             tracing::info!("압축 해제 디렉토리가 타겟 디렉토리와 동일하므로 정리하지 않음");
         }

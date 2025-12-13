@@ -59,7 +59,7 @@ impl NodeExecutor {
 
         // 1. 캐시 경로에서 찾기 (우선)
         let cache_dir = NodeDownloader::cache_dir()?;
-        let node_dir = cache_dir.join(format!("node-v24.12.0-{}-{}", os_name, arch));
+        let node_dir = cache_dir.join(format!("node-{}-{}-{}", node_downloader::NODE_VERSION, os_name, arch));
         let node_path = node_dir.join(&binary_name);
 
         if node_path.exists() {
@@ -81,7 +81,7 @@ impl NodeExecutor {
             let resources_node_dir = tauri_dir
                 .join("resources")
                 .join("node-runtime")
-                .join(format!("node-v24.12.0-{}-{}", os_name, arch));
+                .join(format!("node-{}-{}-{}", node_downloader::NODE_VERSION, os_name, arch));
             let resources_node_path = resources_node_dir.join(&binary_name);
 
             if resources_node_path.exists() {
@@ -256,13 +256,14 @@ impl NodeExecutor {
         }
 
         // 에러 메시지
-        let cache_path = cache_dir.join(format!("node-v24.12.0-{}-{}", os_name, arch));
+        let cache_path = cache_dir.join(format!("node-{}-{}-{}", node_downloader::NODE_VERSION, os_name, arch));
         anyhow::bail!(
             "Node.js 바이너리를 찾을 수 없습니다.\n\
             - 캐시 경로: {}\n\
             - OS: {}, Arch: {}\n\
             - 바이너리 이름: {}\n\
-            앱을 재시작하면 자동으로 다운로드됩니다.",
+            NodeExecutor::new()는 바이너리를 자동으로 다운로드하지 않습니다.\n\
+            앱 시작 시 ensure_node_binary()가 호출되어 자동으로 다운로드됩니다.",
             cache_path.display(),
             std::env::consts::OS,
             std::env::consts::ARCH,
