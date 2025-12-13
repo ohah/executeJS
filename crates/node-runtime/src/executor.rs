@@ -2,9 +2,13 @@ use crate::execution::ExecutionOutput;
 use crate::node_downloader::NodeDownloader;
 use crate::npm_manager::NpmManager;
 use anyhow::{Context, Result};
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{ImportDeclaration, ModuleDeclaration};
+use oxc_ast_visit::Visit;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use std::path::PathBuf;
 use std::process::Stdio;
-use tempfile::NamedTempFile;
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::process::Command;
 
@@ -104,8 +108,28 @@ impl NodeExecutor {
         Ok(node_path)
     }
 
+    /// 코드에 ES modules 구문이 있는지 확인 (oxc 파서 사용)
+    fn has_es_modules(code: &str) -> bool {
+        let allocator = Allocator::default();
+        let source_type = SourceType::default().with_module(true);
+
+        let ret = Parser::new(&allocator, code, source_type).parse();
+
+        // 파싱 오류가 있어도 계속 진행
+        if !ret.errors.is_empty() {
+            tracing::debug!(
+                "코드 파싱 중 오류 발생 ({}개), 계속 진행합니다",
+                ret.errors.len()
+            );
+        }
+
+        let mut detector = EsModuleDetector::new();
+        detector.visit_program(&ret.program);
+        detector.has_es_modules
+    }
+
     /// JavaScript 코드 실행
-    pub async fn execute_script(&self, _filename: &str, code: &str) -> Result<String> {
+    pub async fn execute_script(&self, filename: &str, code: &str) -> Result<String> {
         tracing::debug!("Node.js 코드 실행 시작, 코드 길이: {} bytes", code.len());
 
         // 1. 패키지 파싱 및 설치
@@ -126,17 +150,35 @@ impl NodeExecutor {
             .parent()
             .context("Node.js 바이너리 경로가 유효하지 않습니다")?;
 
-        // ES modules 지원을 위해 .mjs 확장자 사용
-        let temp_file = NamedTempFile::with_suffix_in(".mjs", node_dir)
-            .context("임시 파일 생성 실패")?
-            .into_temp_path();
+        // 탭 이름을 파일명으로 사용 (안전한 파일명으로 변환)
+        let safe_filename = filename
+            .chars()
+            .map(|c| {
+                if c.is_alphanumeric() || c == '.' || c == '-' || c == '_' {
+                    c
+                } else {
+                    '_'
+                }
+            })
+            .collect::<String>();
 
-        let temp_file_path = temp_file.to_path_buf();
-        let temp_file_name = temp_file_path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .context("임시 파일 이름을 가져올 수 없습니다")?
-            .to_string();
+        // 코드 내용을 보고 ES modules인지 CommonJS인지 판단 (oxc 파서 사용)
+        let has_es_modules = Self::has_es_modules(code);
+        let extension = if has_es_modules { "mjs" } else { "cjs" };
+
+        // 확장자 결정
+        let file_name = if safe_filename.contains('.') {
+            // 확장자가 있으면 기존 확장자를 새로운 확장자로 변경
+            if let Some(dot_pos) = safe_filename.rfind('.') {
+                format!("{}.{}", &safe_filename[..dot_pos], extension)
+            } else {
+                format!("{}.{}", safe_filename, extension)
+            }
+        } else {
+            format!("{}.{}", safe_filename, extension)
+        };
+
+        let temp_file_path = node_dir.join(&file_name);
 
         // 코드를 임시 파일에 쓰기
         {
@@ -150,7 +192,7 @@ impl NodeExecutor {
 
         // 3. Node.js로 임시 파일 실행
         let mut child = Command::new(&self.node_path)
-            .arg(&temp_file_name)
+            .arg(&file_name)
             .current_dir(node_dir)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
@@ -185,7 +227,7 @@ impl NodeExecutor {
         let status = child.wait().await.context("프로세스 종료 대기 실패")?;
 
         // 4. 임시 파일 삭제
-        drop(temp_file);
+        let _ = tokio::fs::remove_file(&temp_file_path).await;
 
         // 출력 버퍼 생성
         let mut output = ExecutionOutput::new();
@@ -195,7 +237,70 @@ impl NodeExecutor {
         // 프로세스가 실패한 경우 (0이 아닌 종료 코드)
         if !status.success() {
             let error_msg = if !output.stderr.is_empty() {
-                output.stderr.clone()
+                // 에러 메시지에서 탭 이름을 제외한 파일 경로 제거
+                let temp_file_str = temp_file_path.to_string_lossy().to_string();
+                let file_name_only = temp_file_path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("");
+                let node_dir_str = node_dir.to_string_lossy().to_string();
+
+                output
+                    .stderr
+                    .lines()
+                    .map(|line| {
+                        let mut cleaned = line.to_string();
+
+                        // 전체 파일 경로를 파일명만으로 대체
+                        if cleaned.contains(&temp_file_str) {
+                            cleaned = cleaned.replace(&temp_file_str, file_name_only);
+                        }
+
+                        // file:// 프로토콜과 경로 제거 (파일명만 남기기)
+                        if cleaned.contains("file://") {
+                            // file:///path/to/file.cjs:3 -> file.cjs:3
+                            if let Some(file_pos) = cleaned.find(file_name_only) {
+                                // file:// 부분을 제거하고 파일명부터 시작
+                                cleaned = cleaned[file_pos..].to_string();
+                            } else {
+                                // file://만 제거
+                                cleaned = cleaned.replace("file://", "");
+                            }
+                        }
+
+                        // .cjs, .mjs, .js 확장자가 있는 경로 패턴 처리
+                        if (cleaned.contains(".cjs:")
+                            || cleaned.contains(".mjs:")
+                            || cleaned.contains(".js:"))
+                            && (cleaned.contains('/') || cleaned.contains('\\'))
+                        {
+                            // 경로 부분을 찾아서 파일명만 남기기
+                            if let Some(file_pos) = cleaned.find(file_name_only) {
+                                cleaned = cleaned[file_pos..].to_string();
+                            }
+                        }
+
+                        // node_dir 경로를 제거 (파일명은 유지)
+                        if cleaned.contains(&node_dir_str) {
+                            // node_dir 경로를 제거하되 파일명은 유지
+                            cleaned = cleaned.replace(&node_dir_str, "");
+                            // 경로 구분자 제거
+                            cleaned = cleaned
+                                .trim_start_matches('/')
+                                .trim_start_matches('\\')
+                                .to_string();
+
+                            // 파일명이 포함된 경우, 파일명 앞의 경로 부분만 제거
+                            if let Some(file_pos) = cleaned.find(file_name_only) {
+                                // 파일명 앞부분 제거
+                                cleaned = cleaned[file_pos..].to_string();
+                            }
+                        }
+
+                        cleaned
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
             } else {
                 format!(
                     "프로세스가 종료 코드 {}로 종료되었습니다",
@@ -212,5 +317,28 @@ impl NodeExecutor {
         } else {
             Ok(result_text)
         }
+    }
+}
+
+/// ES modules 구문 감지기
+struct EsModuleDetector {
+    has_es_modules: bool,
+}
+
+impl EsModuleDetector {
+    fn new() -> Self {
+        Self {
+            has_es_modules: false,
+        }
+    }
+}
+
+impl<'a> Visit<'a> for EsModuleDetector {
+    fn visit_import_declaration(&mut self, _decl: &ImportDeclaration<'a>) {
+        self.has_es_modules = true;
+    }
+
+    fn visit_module_declaration(&mut self, _decl: &ModuleDeclaration<'a>) {
+        self.has_es_modules = true;
     }
 }
