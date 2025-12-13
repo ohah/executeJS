@@ -22,6 +22,15 @@ dirs = "5.0"
 sha2 = "0.10"
 fs2 = "0.4"
 
+# JavaScript 파서 (npm 패키지 파싱용)
+oxc_allocator = "0.102.0"
+oxc_ast = "0.102.0"
+oxc_ast_visit = "0.102.0"
+oxc_parser = "0.102.0"
+oxc_span = "0.102.0"
+serde_json = "1.0"
+tempfile = "3.23.0"
+
 [dev-dependencies]
 tokio.workspace = true
 

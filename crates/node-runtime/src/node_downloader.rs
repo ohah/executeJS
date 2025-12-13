@@ -67,9 +67,14 @@ impl NodeDownloader {
     pub async fn ensure_node_binary() -> Result<PathBuf> {
         let (os_name, arch, _extension, binary_name) = Self::get_platform_info()?;
         let cache_dir = Self::cache_dir()?;
-        // find_node_binary와 동일한 경로 형식 사용
         let node_dir = cache_dir.join(format!("node-{}-{}-{}", NODE_VERSION, os_name, arch));
-        let node_path = node_dir.join(&binary_name);
+
+        // macOS/Linux: bin/node, Windows: node.exe
+        let node_path = if os_name == "win" {
+            node_dir.join(&binary_name)
+        } else {
+            node_dir.join("bin").join(&binary_name)
+        };
 
         // 이미 존재하면 반환
         if node_path.exists() {
@@ -202,25 +207,23 @@ impl NodeDownloader {
         // 타겟 디렉토리 생성
         fs::create_dir_all(&node_dir).context("Node.js 디렉토리 생성 실패")?;
 
-        // 바이너리 복사
-        let target_binary = node_dir.join(&binary_name);
+        // 바이너리 처리
+        // Windows: 이미 루트에 있으므로 그대로 사용 (복사 불필요)
+        // macOS/Linux: bin/node를 그대로 사용 (복사하지 않음)
+        let target_binary = source_binary.clone();
+
         tracing::info!("소스 바이너리: {}", source_binary.display());
         tracing::info!("타겟 바이너리: {}", target_binary.display());
 
-        if source_binary != target_binary {
-            tracing::info!("바이너리 복사 중...");
-            fs::copy(&source_binary, &target_binary).context("바이너리 복사 실패")?;
-            tracing::info!("바이너리 복사 완료");
-        } else {
-            tracing::info!("바이너리가 이미 올바른 위치에 있습니다");
+        // 바이너리 존재 확인
+        if !target_binary.exists() {
+            anyhow::bail!("바이너리를 찾을 수 없습니다: {}", target_binary.display());
         }
 
-        // 복사 후 확인
-        if !target_binary.exists() {
-            anyhow::bail!(
-                "바이너리 복사 후에도 파일을 찾을 수 없습니다: {}",
-                target_binary.display()
-            );
+        if os_name == "win" {
+            tracing::info!("Windows: 바이너리가 이미 올바른 위치에 있습니다");
+        } else {
+            tracing::info!("macOS/Linux: 바이너리를 원본 위치에서 사용합니다");
         }
 
         // 임시 파일 정리
@@ -247,6 +250,11 @@ impl NodeDownloader {
             "Node.js 바이너리 다운로드 완료: {}",
             target_binary.display()
         );
+
+        // macOS/Linux: bin/node에 실행 권한 설정
+        if os_name != "win" {
+            Self::set_permissions_if_needed(&target_binary)?;
+        }
 
         // 락 파일 정리
         if let Err(e) = fs::remove_file(&lock_file) {
