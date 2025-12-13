@@ -59,7 +59,12 @@ impl NodeExecutor {
 
         // 1. 캐시 경로에서 찾기 (우선)
         let cache_dir = NodeDownloader::cache_dir()?;
-        let node_dir = cache_dir.join(format!("node-{}-{}-{}", node_downloader::NODE_VERSION, os_name, arch));
+        let node_dir = cache_dir.join(format!(
+            "node-{}-{}-{}",
+            node_downloader::NODE_VERSION,
+            os_name,
+            arch
+        ));
         let node_path = node_dir.join(&binary_name);
 
         if node_path.exists() {
@@ -78,10 +83,16 @@ impl NodeExecutor {
             .map(|p| p.join("apps").join("executeJS").join("src-tauri"));
 
         if let Some(ref tauri_dir) = src_tauri_dir {
-            let resources_node_dir = tauri_dir
-                .join("resources")
-                .join("node-runtime")
-                .join(format!("node-{}-{}-{}", node_downloader::NODE_VERSION, os_name, arch));
+            let resources_node_dir =
+                tauri_dir
+                    .join("resources")
+                    .join("node-runtime")
+                    .join(format!(
+                        "node-{}-{}-{}",
+                        node_downloader::NODE_VERSION,
+                        os_name,
+                        arch
+                    ));
             let resources_node_path = resources_node_dir.join(&binary_name);
 
             if resources_node_path.exists() {
@@ -256,7 +267,12 @@ impl NodeExecutor {
         }
 
         // 에러 메시지
-        let cache_path = cache_dir.join(format!("node-{}-{}-{}", node_downloader::NODE_VERSION, os_name, arch));
+        let cache_path = cache_dir.join(format!(
+            "node-{}-{}-{}",
+            node_downloader::NODE_VERSION,
+            os_name,
+            arch
+        ));
         anyhow::bail!(
             "Node.js 바이너리를 찾을 수 없습니다.\n\
             - 캐시 경로: {}\n\

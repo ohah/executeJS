@@ -19,7 +19,8 @@ tar = "0.4"
 xz2 = "0.1"
 zip = "0.6"
 dirs = "5.0"
-const_format = "0.2"
+sha2 = "0.10"
+fs2 = "0.4"
 
 [dev-dependencies]
 tokio.workspace = true

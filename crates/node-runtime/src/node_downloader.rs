@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use sha2::{Digest, Sha256};
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -108,10 +109,23 @@ impl NodeDownloader {
 
         let file_name = format!("node-{}-{}-{}.{}", NODE_VERSION, os_name, arch, extension);
         let download_url = format!("{}{}", base_url(), file_name);
+        let lock_file = cache_dir.join(format!("{}.lock", file_name));
+
+        // 동시 다운로드 보호: 락 파일 생성
+        let _lock_guard = Self::acquire_download_lock(&lock_file).await?;
 
         tracing::info!("Node.js 다운로드 시작: {}", download_url);
         tracing::info!("캐시 디렉토리: {}", cache_dir.display());
         tracing::info!("타겟 디렉토리: {}", node_dir.display());
+
+        // 락 획득 후 다시 확인 (다른 프로세스가 이미 다운로드 완료했을 수 있음)
+        let node_path = node_dir.join(&binary_name);
+        if node_path.exists() {
+            tracing::info!("다른 프로세스가 이미 다운로드를 완료했습니다");
+            // 락 파일 정리
+            let _ = fs::remove_file(&lock_file);
+            return Ok(());
+        }
 
         // 다운로드
         let response = reqwest::get(&download_url)
@@ -131,6 +145,11 @@ impl NodeDownloader {
             .bytes()
             .await
             .context("다운로드 데이터 읽기 실패")?;
+
+        // SHA256 체크섬 검증
+        tracing::info!("파일 무결성 검증 중...");
+        Self::verify_checksum(&file_name, &bytes).await?;
+        tracing::info!("파일 무결성 검증 완료");
 
         // 임시 파일에 저장
         let temp_file = cache_dir.join(&file_name);
@@ -221,6 +240,12 @@ impl NodeDownloader {
             "Node.js 바이너리 다운로드 완료: {}",
             target_binary.display()
         );
+
+        // 락 파일 정리
+        if let Err(e) = fs::remove_file(&lock_file) {
+            tracing::warn!("락 파일 삭제 실패 ({}): {}", lock_file.display(), e);
+        }
+
         Ok(())
     }
 
@@ -238,5 +263,154 @@ impl NodeDownloader {
             }
         }
         Ok(())
+    }
+
+    /// 다운로드 락 획득 (동시 다운로드 방지)
+    /// 반환된 파일 핸들은 함수가 끝날 때까지 유지되어 락이 유지됩니다.
+    async fn acquire_download_lock(lock_file: &Path) -> Result<fs::File> {
+        use fs2::FileExt;
+        use std::fs::OpenOptions;
+
+        // 락 파일 생성 및 배타적 락 획득
+        let file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .open(lock_file)
+            .context("락 파일 생성 실패")?;
+
+        // 비동기적으로 락 획득 시도 (블로킹)
+        let file_clone = file.try_clone()?;
+        tokio::task::spawn_blocking(move || {
+            file_clone
+                .lock_exclusive()
+                .context("다운로드 락 획득 실패 (다른 프로세스가 다운로드 중일 수 있음)")
+        })
+        .await
+        .context("락 획득 작업 실패")??;
+
+        Ok(file)
+    }
+
+    /// SHA256 체크섬 검증
+    async fn verify_checksum(file_name: &str, file_bytes: &[u8]) -> Result<()> {
+        // SHASUMS256.txt 다운로드
+        let checksums_url = format!("{}SHASUMS256.txt", base_url());
+        tracing::debug!("체크섬 파일 다운로드: {}", checksums_url);
+
+        let response = reqwest::get(&checksums_url)
+            .await
+            .context("체크섬 파일 다운로드 실패")?;
+
+        if !response.status().is_success() {
+            tracing::warn!(
+                "체크섬 파일 다운로드 실패: HTTP {} - 무결성 검증을 건너뜁니다",
+                response.status()
+            );
+            return Ok(()); // 체크섬 검증 실패 시 경고만 하고 계속 진행
+        }
+
+        let checksums_text = response
+            .text()
+            .await
+            .context("체크섬 파일 읽기 실패")?;
+
+        // 파일의 SHA256 계산
+        let mut hasher = Sha256::new();
+        hasher.update(file_bytes);
+        let computed_hash = hasher.finalize();
+        let computed_hash_hex = format!("{:x}", computed_hash);
+
+        // 체크섬 파일에서 해당 파일의 해시 찾기
+        for line in checksums_text.lines() {
+            if line.ends_with(file_name) {
+                let expected_hash = line
+                    .split_whitespace()
+                    .next()
+                    .context("체크섬 파일 형식 오류")?;
+
+                if computed_hash_hex == expected_hash {
+                    tracing::info!("파일 무결성 검증 성공");
+                    return Ok(());
+                } else {
+                    anyhow::bail!(
+                        "파일 무결성 검증 실패: 예상 해시 {}, 실제 해시 {}",
+                        expected_hash,
+                        computed_hash_hex
+                    );
+                }
+            }
+        }
+
+        tracing::warn!(
+            "체크섬 파일에서 {}에 대한 해시를 찾을 수 없습니다 - 무결성 검증을 건너뜁니다",
+            file_name
+        );
+        Ok(()) // 체크섬 파일에 없으면 경고만 하고 계속 진행
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_platform_info() {
+        let result = NodeDownloader::get_platform_info();
+        assert!(result.is_ok());
+
+        let (os_name, arch, extension, binary_name) = result.unwrap();
+        assert!(!os_name.is_empty());
+        assert!(!arch.is_empty());
+        assert!(!extension.is_empty());
+        assert!(!binary_name.is_empty());
+
+        // 플랫폼별 검증
+        #[cfg(target_os = "macos")]
+        {
+            assert_eq!(os_name, "darwin");
+            assert!(extension == "tar.xz");
+            assert_eq!(binary_name, "node");
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            assert_eq!(os_name, "win");
+            assert!(extension == "zip");
+            assert_eq!(binary_name, "node.exe");
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            assert_eq!(os_name, "linux");
+            assert!(extension == "tar.xz");
+            assert_eq!(binary_name, "node");
+        }
+    }
+
+    #[test]
+    fn test_cache_dir() {
+        let result = NodeDownloader::cache_dir();
+        assert!(result.is_ok());
+
+        let cache_dir = result.unwrap();
+        assert!(cache_dir.to_string_lossy().contains("executejs"));
+        assert!(cache_dir.to_string_lossy().contains("node-runtime"));
+        assert!(cache_dir.exists() || cache_dir.parent().unwrap().exists());
+    }
+
+    #[test]
+    fn test_node_version_constant() {
+        // NODE_VERSION 상수가 올바르게 정의되어 있는지 확인
+        assert_eq!(NODE_VERSION, "v24.12.0");
+        assert!(NODE_VERSION.starts_with('v'));
+    }
+
+    #[test]
+    fn test_base_url() {
+        let url = base_url();
+        assert!(url.contains("nodejs.org"));
+        assert!(url.contains("dist"));
+        assert!(url.contains(NODE_VERSION));
+        assert!(url.ends_with('/'));
     }
 }
