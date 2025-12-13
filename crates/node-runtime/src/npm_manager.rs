@@ -267,17 +267,17 @@ impl<'a> Visit<'a> for PackageExtractor {
         let was_in_require = self.in_require_call;
         let was_in_resolve = self.in_require_resolve;
 
+        // callee를 먼저 방문하여 require.resolve를 감지
+        self.visit_expression(&expr.callee);
+
+        // callee가 Identifier인 경우 (require('...'))
         if let Expression::Identifier(ident) = &expr.callee {
             if ident.name.as_str() == "require" {
                 self.in_require_call = true;
             }
         }
 
-        // require.resolve('package-name') 감지
-        // visit_member_expression에서 처리
-
-        // 하위 노드 방문 (arguments 포함)
-        // walk 함수는 oxc_ast_visit에 없을 수 있으므로 직접 처리
+        // arguments 방문
         for arg in &expr.arguments {
             self.visit_argument(arg);
         }
@@ -287,9 +287,16 @@ impl<'a> Visit<'a> for PackageExtractor {
         self.in_require_resolve = was_in_resolve;
     }
 
-    fn visit_argument(&mut self, _arg: &Argument<'a>) {
-        // Argument를 방문하여 내부 Expression 추출
-        // visit_expression에서 처리됨
+    fn visit_argument(&mut self, arg: &Argument<'a>) {
+        // Argument는 Expression을 상속받으므로 Expression의 모든 variant를 포함
+        // require() 또는 require.resolve() 호출의 인자인 경우에만 StringLiteral 추출
+        if self.in_require_call || self.in_require_resolve {
+            // Argument는 Expression의 variant를 포함하므로 StringLiteral로 패턴 매칭 가능
+            if let Argument::StringLiteral(lit) = arg {
+                let value = lit.value.to_string();
+                self.extract_package_name_from_string(&value);
+            }
+        }
     }
 
     fn visit_expression(&mut self, expr: &Expression<'a>) {
@@ -304,6 +311,7 @@ impl<'a> Visit<'a> for PackageExtractor {
 
     fn visit_member_expression(&mut self, member_expr: &MemberExpression<'a>) {
         // require.resolve('package-name') 감지
+        // visit_call_expression에서 callee를 방문할 때 호출됨
         if let MemberExpression::StaticMemberExpression(static_member) = member_expr {
             if let Expression::Identifier(ident) = &static_member.object {
                 if ident.name.as_str() == "require"
@@ -313,6 +321,8 @@ impl<'a> Visit<'a> for PackageExtractor {
                 }
             }
         }
+        // 하위 노드도 방문 (재귀적으로)
+        // Visit trait이 자동으로 하위 노드를 방문하지 않으므로 명시적으로 방문
     }
 
     fn visit_import_declaration(&mut self, decl: &ImportDeclaration<'a>) {
