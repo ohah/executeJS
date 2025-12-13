@@ -137,7 +137,10 @@ impl NodeDownloader {
             anyhow::bail!(
                 "Node.js 다운로드 실패: HTTP {} - {}",
                 response.status(),
-                response.status().canonical_reason().unwrap_or("알 수 없는 오류")
+                response
+                    .status()
+                    .canonical_reason()
+                    .unwrap_or("알 수 없는 오류")
             );
         }
 
@@ -230,7 +233,11 @@ impl NodeDownloader {
         if extracted_dir != node_dir && extracted_dir.exists() {
             tracing::info!("압축 해제 디렉토리 정리 중: {}", extracted_dir.display());
             if let Err(e) = fs::remove_dir_all(&extracted_dir) {
-                tracing::warn!("압축 해제 디렉토리 삭제 실패 ({}): {}", extracted_dir.display(), e);
+                tracing::warn!(
+                    "압축 해제 디렉토리 삭제 실패 ({}): {}",
+                    extracted_dir.display(),
+                    e
+                );
             }
         } else {
             tracing::info!("압축 해제 디렉토리가 타겟 디렉토리와 동일하므로 정리하지 않음");
@@ -309,10 +316,7 @@ impl NodeDownloader {
             return Ok(()); // 체크섬 검증 실패 시 경고만 하고 계속 진행
         }
 
-        let checksums_text = response
-            .text()
-            .await
-            .context("체크섬 파일 읽기 실패")?;
+        let checksums_text = response.text().await.context("체크섬 파일 읽기 실패")?;
 
         // 파일의 SHA256 계산
         let mut hasher = Sha256::new();
