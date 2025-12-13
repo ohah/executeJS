@@ -237,70 +237,7 @@ impl NodeExecutor {
         // 프로세스가 실패한 경우 (0이 아닌 종료 코드)
         if !status.success() {
             let error_msg = if !output.stderr.is_empty() {
-                // 에러 메시지에서 탭 이름을 제외한 파일 경로 제거
-                let temp_file_str = temp_file_path.to_string_lossy().to_string();
-                let file_name_only = temp_file_path
-                    .file_name()
-                    .and_then(|n| n.to_str())
-                    .unwrap_or("");
-                let node_dir_str = node_dir.to_string_lossy().to_string();
-
-                output
-                    .stderr
-                    .lines()
-                    .map(|line| {
-                        let mut cleaned = line.to_string();
-
-                        // 전체 파일 경로를 파일명만으로 대체
-                        if cleaned.contains(&temp_file_str) {
-                            cleaned = cleaned.replace(&temp_file_str, file_name_only);
-                        }
-
-                        // file:// 프로토콜과 경로 제거 (파일명만 남기기)
-                        if cleaned.contains("file://") {
-                            // file:///path/to/file.cjs:3 -> file.cjs:3
-                            if let Some(file_pos) = cleaned.find(file_name_only) {
-                                // file:// 부분을 제거하고 파일명부터 시작
-                                cleaned = cleaned[file_pos..].to_string();
-                            } else {
-                                // file://만 제거
-                                cleaned = cleaned.replace("file://", "");
-                            }
-                        }
-
-                        // .cjs, .mjs, .js 확장자가 있는 경로 패턴 처리
-                        if (cleaned.contains(".cjs:")
-                            || cleaned.contains(".mjs:")
-                            || cleaned.contains(".js:"))
-                            && (cleaned.contains('/') || cleaned.contains('\\'))
-                        {
-                            // 경로 부분을 찾아서 파일명만 남기기
-                            if let Some(file_pos) = cleaned.find(file_name_only) {
-                                cleaned = cleaned[file_pos..].to_string();
-                            }
-                        }
-
-                        // node_dir 경로를 제거 (파일명은 유지)
-                        if cleaned.contains(&node_dir_str) {
-                            // node_dir 경로를 제거하되 파일명은 유지
-                            cleaned = cleaned.replace(&node_dir_str, "");
-                            // 경로 구분자 제거
-                            cleaned = cleaned
-                                .trim_start_matches('/')
-                                .trim_start_matches('\\')
-                                .to_string();
-
-                            // 파일명이 포함된 경우, 파일명 앞의 경로 부분만 제거
-                            if let Some(file_pos) = cleaned.find(file_name_only) {
-                                // 파일명 앞부분 제거
-                                cleaned = cleaned[file_pos..].to_string();
-                            }
-                        }
-
-                        cleaned
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n")
+                output.stderr.clone()
             } else {
                 format!(
                     "프로세스가 종료 코드 {}로 종료되었습니다",
