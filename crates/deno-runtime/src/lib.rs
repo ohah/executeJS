@@ -105,7 +105,8 @@ fn op_custom_print(#[string] message: String, is_err: bool) -> Result<(), AnyErr
     Ok(())
 }
 
-/// 커스텀 확장 정의
+// 커스텀 확장 정의
+// 커스텀 확장 정의
 extension!(
     executejs_runtime,
     ops = [op_console_log, op_alert, op_custom_print],
