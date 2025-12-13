@@ -19,9 +19,7 @@
     "docs:build": "pnpm --filter @executeJS/docs build",
     "docs:preview": "pnpm --filter @executeJS/docs preview",
     "clean": "pnpm -r clean && cargo clean",
-    "type-check": "pnpm -r type-check",
-    "download-node": "node scripts/download-node-binaries.js",
-    "postinstall": "pnpm download-node"
+    "type-check": "pnpm -r type-check"
   },
   "devDependencies": {
     "@types/node": "latest",
