@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 
 /// npm 레지스트리 메타데이터 응답
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct NpmRegistryResponse {
     #[serde(rename = "dist-tags")]
     dist_tags: DistTags,
@@ -18,12 +19,14 @@ struct DistTags {
 }
 
 /// 패키지 버전 메타데이터
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct PackageVersion {
     version: String,
     dist: Dist,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct Dist {
     tarball: String,
