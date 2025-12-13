@@ -1,0 +1,41 @@
+name: Rust Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/executeJS/src-tauri/**"
+      - "crates/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/rust-test.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/executeJS/src-tauri/**"
+      - "crates/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/rust-test.yml"
+
+jobs:
+  rust-test:
+    name: Rust Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          cache: true
+          matcher: true
+
+      - name: Run Rust tests
+        run: |
+          echo "Running Rust tests..."
+          cargo test --all-targets
+
