@@ -39,7 +39,7 @@ This repo (ohah/executeJS) uses the **ohah** GitHub account for posting reviews.
      - **What's done well**: Structure, naming, conventions, consistency.
      - **Improvement suggestions**: Potential bugs, edge cases, performance, tests, and other recommendations.
    - **Line-level suggestions**: For each place that needs a change, prepare an inline comment with:
-     - **path**: Repo-root-relative path (e.g. `apps/executeJS/src/components/CodeEditor.tsx`)
+     - **path**: Repo-root-relative path (e.g. `apps/executeJS/src/widgets/code-editor/code-editor.tsx`)
      - **line**: Line number in the **new (right) side** of the diff.
      - **side**: `"RIGHT"`
      - **body**: Short explanation; if the change is a concrete code edit, include a ` ```suggestion ``` ` block so GitHub shows "Commit suggestion".
@@ -61,7 +61,7 @@ This repo (ohah/executeJS) uses the **ohah** GitHub account for posting reviews.
          "body": "## AI review\n\n### What's done well\n- ...\n\n### Improvement suggestions\n- ...\n\n### Testing\n- ...",
          "comments": [
            {
-             "path": "apps/executeJS/src/components/CodeEditor.tsx",
+             "path": "apps/executeJS/src/widgets/code-editor/code-editor.tsx",
              "line": 42,
              "side": "RIGHT",
              "body": "Consider adding error handling for code execution.\n\n```suggestion\n  try {\n    const result = await executeCode(code);\n  } catch (error) {\n    console.error(error);\n  }\n```"

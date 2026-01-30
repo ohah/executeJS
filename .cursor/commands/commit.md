@@ -1,6 +1,6 @@
 # Commit changes following project rules
 
-When creating or suggesting git commits, follow these rules. Full details in `AGENTS.md`.
+When creating or suggesting git commits, follow these rules. Full details in `agent.md`.
 
 ## Message format
 
